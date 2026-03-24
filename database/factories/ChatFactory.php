@@ -12,15 +12,27 @@ class ChatFactory extends Factory
 
     public function definition(): array
     {
-        $status = fake()->randomElement([Chat::STATUS_BOT, Chat::STATUS_ADMIN]);
+        $status = fake()->randomElement([Chat::STATUS_ACTIVE, Chat::STATUS_BOT, Chat::STATUS_ADMIN]);
 
         return [
+            'whatsapp_chat_id' => 'wa_' . fake()->unique()->numerify('##########'),
             'customer_phone' => fake()->unique()->numerify('628##########'),
             'customer_name' => fake()->name(),
             'status' => $status,
             'handled_by' => $status === Chat::STATUS_ADMIN ? User::factory() : null,
             'last_message_at' => fake()->dateTimeBetween('-7 days', 'now'),
         ];
+    }
+
+    /**
+     * Chat in active state
+     */
+    public function active(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => Chat::STATUS_ACTIVE,
+            'handled_by' => null,
+        ]);
     }
 
     /**

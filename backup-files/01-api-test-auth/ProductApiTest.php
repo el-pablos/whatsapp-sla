@@ -3,11 +3,6 @@
 use App\Models\Product;
 use App\Models\User;
 
-// fix: tambahkan api token authentication untuk tests - 2026-03-24
-beforeEach(function () {
-    config(['services.bot.api_token' => 'test-api-token']);
-});
-
 describe('Product API', function () {
 
     describe('GET /api/products', function () {
@@ -16,10 +11,7 @@ describe('Product API', function () {
             Product::factory()->count(3)->create(['status' => Product::STATUS_ACTIVE]);
             Product::factory()->count(2)->create(['status' => Product::STATUS_INACTIVE]);
 
-            $response = $this->withHeaders([
-                'Authorization' => 'Bearer test-api-token',
-                'Accept' => 'application/json',
-            ])->getJson('/api/products');
+            $response = $this->getJson('/api/products');
 
             $response->assertStatus(200)
                 ->assertJson(['success' => true])
@@ -30,10 +22,7 @@ describe('Product API', function () {
             Product::factory()->create(['name' => 'Zebra', 'status' => Product::STATUS_ACTIVE]);
             Product::factory()->create(['name' => 'Apple', 'status' => Product::STATUS_ACTIVE]);
 
-            $response = $this->withHeaders([
-                'Authorization' => 'Bearer test-api-token',
-                'Accept' => 'application/json',
-            ])->getJson('/api/products');
+            $response = $this->getJson('/api/products');
 
             $response->assertStatus(200);
             $data = $response->json('data');
@@ -44,10 +33,7 @@ describe('Product API', function () {
         it('returns empty array when no active products', function () {
             Product::factory()->count(2)->create(['status' => Product::STATUS_INACTIVE]);
 
-            $response = $this->withHeaders([
-                'Authorization' => 'Bearer test-api-token',
-                'Accept' => 'application/json',
-            ])->getJson('/api/products');
+            $response = $this->getJson('/api/products');
 
             $response->assertStatus(200)
                 ->assertJson(['success' => true])
@@ -59,10 +45,7 @@ describe('Product API', function () {
         it('returns product detail', function () {
             $product = Product::factory()->create(['name' => 'Telur Ayam']);
 
-            $response = $this->withHeaders([
-                'Authorization' => 'Bearer test-api-token',
-                'Accept' => 'application/json',
-            ])->getJson("/api/products/{$product->id}");
+            $response = $this->getJson("/api/products/{$product->id}");
 
             $response->assertStatus(200)
                 ->assertJson([
@@ -72,10 +55,7 @@ describe('Product API', function () {
         });
 
         it('returns 404 for non-existent product', function () {
-            $response = $this->withHeaders([
-                'Authorization' => 'Bearer test-api-token',
-                'Accept' => 'application/json',
-            ])->getJson('/api/products/999');
+            $response = $this->getJson('/api/products/999');
 
             $response->assertStatus(404)
                 ->assertJson([
@@ -91,10 +71,7 @@ describe('Product API', function () {
             Product::factory()->create(['type' => 'telur', 'status' => Product::STATUS_ACTIVE]);
             Product::factory()->create(['type' => 'ayam', 'status' => Product::STATUS_ACTIVE]);
 
-            $response = $this->withHeaders([
-                'Authorization' => 'Bearer test-api-token',
-                'Accept' => 'application/json',
-            ])->getJson('/api/products/type/telur');
+            $response = $this->getJson('/api/products/type/telur');
 
             $response->assertStatus(200)
                 ->assertJson(['success' => true])
@@ -104,10 +81,7 @@ describe('Product API', function () {
         it('returns empty array for non-existent type', function () {
             Product::factory()->create(['type' => 'telur', 'status' => Product::STATUS_ACTIVE]);
 
-            $response = $this->withHeaders([
-                'Authorization' => 'Bearer test-api-token',
-                'Accept' => 'application/json',
-            ])->getJson('/api/products/type/invalid');
+            $response = $this->getJson('/api/products/type/invalid');
 
             $response->assertStatus(200)
                 ->assertJsonCount(0, 'data');
@@ -116,10 +90,7 @@ describe('Product API', function () {
         it('does not return inactive products', function () {
             Product::factory()->create(['type' => 'telur', 'status' => Product::STATUS_INACTIVE]);
 
-            $response = $this->withHeaders([
-                'Authorization' => 'Bearer test-api-token',
-                'Accept' => 'application/json',
-            ])->getJson('/api/products/type/telur');
+            $response = $this->getJson('/api/products/type/telur');
 
             $response->assertStatus(200)
                 ->assertJsonCount(0, 'data');

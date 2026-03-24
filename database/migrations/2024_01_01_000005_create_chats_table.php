@@ -13,13 +13,16 @@ return new class extends Migration
     {
         Schema::create('chats', function (Blueprint $table) {
             $table->id();
-            $table->string('customer_phone', 20)->unique();
+            $table->string('whatsapp_chat_id')->unique();
+            $table->string('customer_phone', 20);
             $table->string('customer_name')->nullable();
-            $table->enum('status', ['bot', 'admin', 'resolved'])->default('bot');
+            $table->enum('status', ['active', 'bot', 'admin', 'resolved'])->default('active');
             $table->foreignId('handled_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('last_message_at')->nullable();
             $table->timestamps();
 
+            $table->index('whatsapp_chat_id');
+            $table->index('customer_phone');
             $table->index('status');
             $table->index('handled_by');
             $table->index('last_message_at');

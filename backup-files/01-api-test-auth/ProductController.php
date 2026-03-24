@@ -52,8 +52,7 @@ class ProductController extends Controller
      */
     public function byType(string $type): JsonResponse
     {
-        // fix: gunakan status field bukan is_active - 2026-03-24
-        $products = Product::where('status', 'active')
+        $products = Product::where('is_active', true)
             ->where('type', $type)
             ->orderBy('name')
             ->get();

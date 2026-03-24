@@ -3,19 +3,11 @@
 use App\Models\Chat;
 use App\Models\User;
 
-// fix: tambahkan api token authentication untuk tests - 2026-03-24
-beforeEach(function () {
-    config(['services.bot.api_token' => 'test-api-token']);
-});
-
 describe('Chat API', function () {
 
     describe('POST /api/chats', function () {
         it('creates new chat', function () {
-            $response = $this->withHeaders([
-                'Authorization' => 'Bearer test-api-token',
-                'Accept' => 'application/json',
-            ])->postJson('/api/chats', [
+            $response = $this->postJson('/api/chats', [
                 'whatsapp_chat_id' => 'wa_123456',
                 'customer_phone' => '081234567890',
                 'customer_name' => 'John Doe',
@@ -42,10 +34,7 @@ describe('Chat API', function () {
                 'customer_name' => 'Old Name',
             ]);
 
-            $response = $this->withHeaders([
-                'Authorization' => 'Bearer test-api-token',
-                'Accept' => 'application/json',
-            ])->postJson('/api/chats', [
+            $response = $this->postJson('/api/chats', [
                 'whatsapp_chat_id' => 'wa_123456',
                 'customer_phone' => '081234567890',
                 'customer_name' => 'New Name',
@@ -66,10 +55,7 @@ describe('Chat API', function () {
         });
 
         it('sets default status to active', function () {
-            $response = $this->withHeaders([
-                'Authorization' => 'Bearer test-api-token',
-                'Accept' => 'application/json',
-            ])->postJson('/api/chats', [
+            $response = $this->postJson('/api/chats', [
                 'whatsapp_chat_id' => 'wa_123456',
                 'customer_phone' => '081234567890',
             ]);
@@ -83,10 +69,7 @@ describe('Chat API', function () {
         });
 
         it('allows custom status', function () {
-            $response = $this->withHeaders([
-                'Authorization' => 'Bearer test-api-token',
-                'Accept' => 'application/json',
-            ])->postJson('/api/chats', [
+            $response = $this->postJson('/api/chats', [
                 'whatsapp_chat_id' => 'wa_123456',
                 'customer_phone' => '081234567890',
                 'status' => 'resolved',
@@ -101,10 +84,7 @@ describe('Chat API', function () {
         });
 
         it('validates required fields', function () {
-            $response = $this->withHeaders([
-                'Authorization' => 'Bearer test-api-token',
-                'Accept' => 'application/json',
-            ])->postJson('/api/chats', []);
+            $response = $this->postJson('/api/chats', []);
 
             $response->assertStatus(422)
                 ->assertJson([
@@ -115,10 +95,7 @@ describe('Chat API', function () {
         });
 
         it('validates status enum', function () {
-            $response = $this->withHeaders([
-                'Authorization' => 'Bearer test-api-token',
-                'Accept' => 'application/json',
-            ])->postJson('/api/chats', [
+            $response = $this->postJson('/api/chats', [
                 'whatsapp_chat_id' => 'wa_123456',
                 'customer_phone' => '081234567890',
                 'status' => 'invalid_status',
@@ -129,10 +106,7 @@ describe('Chat API', function () {
         });
 
         it('updates last_message_at timestamp', function () {
-            $response = $this->withHeaders([
-                'Authorization' => 'Bearer test-api-token',
-                'Accept' => 'application/json',
-            ])->postJson('/api/chats', [
+            $response = $this->postJson('/api/chats', [
                 'whatsapp_chat_id' => 'wa_123456',
                 'customer_phone' => '081234567890',
             ]);
@@ -144,10 +118,7 @@ describe('Chat API', function () {
         });
 
         it('allows null customer_name', function () {
-            $response = $this->withHeaders([
-                'Authorization' => 'Bearer test-api-token',
-                'Accept' => 'application/json',
-            ])->postJson('/api/chats', [
+            $response = $this->postJson('/api/chats', [
                 'whatsapp_chat_id' => 'wa_123456',
                 'customer_phone' => '081234567890',
                 'customer_name' => null,

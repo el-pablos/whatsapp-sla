@@ -75,7 +75,7 @@ class ChatController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'status'     => 'nullable|in:bot,admin,resolved',
+            'status'     => 'nullable|in:active,bot,admin,resolved',
             'handled_by' => 'nullable|integer|exists:users,id',
         ]);
 
@@ -118,7 +118,7 @@ class ChatController extends Controller
             'whatsapp_chat_id' => 'required|string',
             'customer_phone'   => 'required|string',
             'customer_name'    => 'nullable|string',
-            'status'           => 'nullable|in:active,resolved,pending',
+            'status'           => 'nullable|in:active,bot,admin,resolved',
         ]);
 
         if ($validator->fails()) {

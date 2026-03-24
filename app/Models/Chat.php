@@ -12,6 +12,7 @@ class Chat extends Model
     use HasFactory;
 
     protected $fillable = [
+        'whatsapp_chat_id',
         'customer_phone',
         'customer_name',
         'status',
@@ -26,6 +27,7 @@ class Chat extends Model
     /**
      * Status constants
      */
+    const STATUS_ACTIVE = 'active';
     const STATUS_BOT = 'bot';
     const STATUS_ADMIN = 'admin';
     const STATUS_RESOLVED = 'resolved';

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\CatalogController::index
- * @see app/Http/Controllers/CatalogController.php:12
+ * @see app/Http/Controllers/CatalogController.php:13
  * @route '/catalogs'
  */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\CatalogController::index
- * @see app/Http/Controllers/CatalogController.php:12
+ * @see app/Http/Controllers/CatalogController.php:13
  * @route '/catalogs'
  */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\CatalogController::index
- * @see app/Http/Controllers/CatalogController.php:12
+ * @see app/Http/Controllers/CatalogController.php:13
  * @route '/catalogs'
  */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,7 +34,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\CatalogController::index
- * @see app/Http/Controllers/CatalogController.php:12
+ * @see app/Http/Controllers/CatalogController.php:13
  * @route '/catalogs'
  */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,7 +44,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\CatalogController::index
- * @see app/Http/Controllers/CatalogController.php:12
+ * @see app/Http/Controllers/CatalogController.php:13
  * @route '/catalogs'
  */
     const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -54,7 +54,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\CatalogController::index
- * @see app/Http/Controllers/CatalogController.php:12
+ * @see app/Http/Controllers/CatalogController.php:13
  * @route '/catalogs'
  */
         indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -63,7 +63,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\CatalogController::index
- * @see app/Http/Controllers/CatalogController.php:12
+ * @see app/Http/Controllers/CatalogController.php:13
  * @route '/catalogs'
  */
         indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -79,7 +79,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     index.form = indexForm
 /**
 * @see \App\Http\Controllers\CatalogController::create
- * @see app/Http/Controllers/CatalogController.php:23
+ * @see app/Http/Controllers/CatalogController.php:28
  * @route '/catalogs/create'
  */
 export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -94,7 +94,7 @@ create.definition = {
 
 /**
 * @see \App\Http\Controllers\CatalogController::create
- * @see app/Http/Controllers/CatalogController.php:23
+ * @see app/Http/Controllers/CatalogController.php:28
  * @route '/catalogs/create'
  */
 create.url = (options?: RouteQueryOptions) => {
@@ -103,7 +103,7 @@ create.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\CatalogController::create
- * @see app/Http/Controllers/CatalogController.php:23
+ * @see app/Http/Controllers/CatalogController.php:28
  * @route '/catalogs/create'
  */
 create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -112,7 +112,7 @@ create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\CatalogController::create
- * @see app/Http/Controllers/CatalogController.php:23
+ * @see app/Http/Controllers/CatalogController.php:28
  * @route '/catalogs/create'
  */
 create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -122,7 +122,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\CatalogController::create
- * @see app/Http/Controllers/CatalogController.php:23
+ * @see app/Http/Controllers/CatalogController.php:28
  * @route '/catalogs/create'
  */
     const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -132,7 +132,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\CatalogController::create
- * @see app/Http/Controllers/CatalogController.php:23
+ * @see app/Http/Controllers/CatalogController.php:28
  * @route '/catalogs/create'
  */
         createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -141,7 +141,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\CatalogController::create
- * @see app/Http/Controllers/CatalogController.php:23
+ * @see app/Http/Controllers/CatalogController.php:28
  * @route '/catalogs/create'
  */
         createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -157,7 +157,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     create.form = createForm
 /**
 * @see \App\Http\Controllers\CatalogController::store
- * @see app/Http/Controllers/CatalogController.php:28
+ * @see app/Http/Controllers/CatalogController.php:33
  * @route '/catalogs'
  */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -172,7 +172,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\CatalogController::store
- * @see app/Http/Controllers/CatalogController.php:28
+ * @see app/Http/Controllers/CatalogController.php:33
  * @route '/catalogs'
  */
 store.url = (options?: RouteQueryOptions) => {
@@ -181,7 +181,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\CatalogController::store
- * @see app/Http/Controllers/CatalogController.php:28
+ * @see app/Http/Controllers/CatalogController.php:33
  * @route '/catalogs'
  */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -191,7 +191,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
     /**
 * @see \App\Http\Controllers\CatalogController::store
- * @see app/Http/Controllers/CatalogController.php:28
+ * @see app/Http/Controllers/CatalogController.php:33
  * @route '/catalogs'
  */
     const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -201,7 +201,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
             /**
 * @see \App\Http\Controllers\CatalogController::store
- * @see app/Http/Controllers/CatalogController.php:28
+ * @see app/Http/Controllers/CatalogController.php:33
  * @route '/catalogs'
  */
         storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -212,10 +212,10 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     store.form = storeForm
 /**
 * @see \App\Http\Controllers\CatalogController::show
- * @see app/Http/Controllers/CatalogController.php:43
+ * @see app/Http/Controllers/CatalogController.php:48
  * @route '/catalogs/{catalog}'
  */
-export const show = (args: { catalog: number | { id: number } } | [catalog: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const show = (args: { catalog: string | number | { id: string | number } } | [catalog: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
@@ -227,10 +227,10 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\CatalogController::show
- * @see app/Http/Controllers/CatalogController.php:43
+ * @see app/Http/Controllers/CatalogController.php:48
  * @route '/catalogs/{catalog}'
  */
-show.url = (args: { catalog: number | { id: number } } | [catalog: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+show.url = (args: { catalog: string | number | { id: string | number } } | [catalog: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { catalog: args }
     }
@@ -260,48 +260,48 @@ show.url = (args: { catalog: number | { id: number } } | [catalog: number | { id
 
 /**
 * @see \App\Http\Controllers\CatalogController::show
- * @see app/Http/Controllers/CatalogController.php:43
+ * @see app/Http/Controllers/CatalogController.php:48
  * @route '/catalogs/{catalog}'
  */
-show.get = (args: { catalog: number | { id: number } } | [catalog: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+show.get = (args: { catalog: string | number | { id: string | number } } | [catalog: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
 /**
 * @see \App\Http\Controllers\CatalogController::show
- * @see app/Http/Controllers/CatalogController.php:43
+ * @see app/Http/Controllers/CatalogController.php:48
  * @route '/catalogs/{catalog}'
  */
-show.head = (args: { catalog: number | { id: number } } | [catalog: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+show.head = (args: { catalog: string | number | { id: string | number } } | [catalog: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: show.url(args, options),
     method: 'head',
 })
 
     /**
 * @see \App\Http\Controllers\CatalogController::show
- * @see app/Http/Controllers/CatalogController.php:43
+ * @see app/Http/Controllers/CatalogController.php:48
  * @route '/catalogs/{catalog}'
  */
-    const showForm = (args: { catalog: number | { id: number } } | [catalog: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    const showForm = (args: { catalog: string | number | { id: string | number } } | [catalog: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
         action: show.url(args, options),
         method: 'get',
     })
 
             /**
 * @see \App\Http\Controllers\CatalogController::show
- * @see app/Http/Controllers/CatalogController.php:43
+ * @see app/Http/Controllers/CatalogController.php:48
  * @route '/catalogs/{catalog}'
  */
-        showForm.get = (args: { catalog: number | { id: number } } | [catalog: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        showForm.get = (args: { catalog: string | number | { id: string | number } } | [catalog: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: show.url(args, options),
             method: 'get',
         })
             /**
 * @see \App\Http\Controllers\CatalogController::show
- * @see app/Http/Controllers/CatalogController.php:43
+ * @see app/Http/Controllers/CatalogController.php:48
  * @route '/catalogs/{catalog}'
  */
-        showForm.head = (args: { catalog: number | { id: number } } | [catalog: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        showForm.head = (args: { catalog: string | number | { id: string | number } } | [catalog: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: show.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',
@@ -314,10 +314,10 @@ show.head = (args: { catalog: number | { id: number } } | [catalog: number | { i
     show.form = showForm
 /**
 * @see \App\Http\Controllers\CatalogController::edit
- * @see app/Http/Controllers/CatalogController.php:50
+ * @see app/Http/Controllers/CatalogController.php:55
  * @route '/catalogs/{catalog}/edit'
  */
-export const edit = (args: { catalog: number | { id: number } } | [catalog: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const edit = (args: { catalog: string | number | { id: string | number } } | [catalog: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
 })
@@ -329,10 +329,10 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\CatalogController::edit
- * @see app/Http/Controllers/CatalogController.php:50
+ * @see app/Http/Controllers/CatalogController.php:55
  * @route '/catalogs/{catalog}/edit'
  */
-edit.url = (args: { catalog: number | { id: number } } | [catalog: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+edit.url = (args: { catalog: string | number | { id: string | number } } | [catalog: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { catalog: args }
     }
@@ -362,48 +362,48 @@ edit.url = (args: { catalog: number | { id: number } } | [catalog: number | { id
 
 /**
 * @see \App\Http\Controllers\CatalogController::edit
- * @see app/Http/Controllers/CatalogController.php:50
+ * @see app/Http/Controllers/CatalogController.php:55
  * @route '/catalogs/{catalog}/edit'
  */
-edit.get = (args: { catalog: number | { id: number } } | [catalog: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+edit.get = (args: { catalog: string | number | { id: string | number } } | [catalog: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: edit.url(args, options),
     method: 'get',
 })
 /**
 * @see \App\Http\Controllers\CatalogController::edit
- * @see app/Http/Controllers/CatalogController.php:50
+ * @see app/Http/Controllers/CatalogController.php:55
  * @route '/catalogs/{catalog}/edit'
  */
-edit.head = (args: { catalog: number | { id: number } } | [catalog: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+edit.head = (args: { catalog: string | number | { id: string | number } } | [catalog: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: edit.url(args, options),
     method: 'head',
 })
 
     /**
 * @see \App\Http\Controllers\CatalogController::edit
- * @see app/Http/Controllers/CatalogController.php:50
+ * @see app/Http/Controllers/CatalogController.php:55
  * @route '/catalogs/{catalog}/edit'
  */
-    const editForm = (args: { catalog: number | { id: number } } | [catalog: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    const editForm = (args: { catalog: string | number | { id: string | number } } | [catalog: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
         action: edit.url(args, options),
         method: 'get',
     })
 
             /**
 * @see \App\Http\Controllers\CatalogController::edit
- * @see app/Http/Controllers/CatalogController.php:50
+ * @see app/Http/Controllers/CatalogController.php:55
  * @route '/catalogs/{catalog}/edit'
  */
-        editForm.get = (args: { catalog: number | { id: number } } | [catalog: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        editForm.get = (args: { catalog: string | number | { id: string | number } } | [catalog: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: edit.url(args, options),
             method: 'get',
         })
             /**
 * @see \App\Http\Controllers\CatalogController::edit
- * @see app/Http/Controllers/CatalogController.php:50
+ * @see app/Http/Controllers/CatalogController.php:55
  * @route '/catalogs/{catalog}/edit'
  */
-        editForm.head = (args: { catalog: number | { id: number } } | [catalog: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        editForm.head = (args: { catalog: string | number | { id: string | number } } | [catalog: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: edit.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',
@@ -416,10 +416,10 @@ edit.head = (args: { catalog: number | { id: number } } | [catalog: number | { i
     edit.form = editForm
 /**
 * @see \App\Http\Controllers\CatalogController::update
- * @see app/Http/Controllers/CatalogController.php:57
+ * @see app/Http/Controllers/CatalogController.php:62
  * @route '/catalogs/{catalog}'
  */
-export const update = (args: { catalog: number | { id: number } } | [catalog: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+export const update = (args: { catalog: string | number | { id: string | number } } | [catalog: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
@@ -431,10 +431,10 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\CatalogController::update
- * @see app/Http/Controllers/CatalogController.php:57
+ * @see app/Http/Controllers/CatalogController.php:62
  * @route '/catalogs/{catalog}'
  */
-update.url = (args: { catalog: number | { id: number } } | [catalog: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+update.url = (args: { catalog: string | number | { id: string | number } } | [catalog: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { catalog: args }
     }
@@ -464,29 +464,29 @@ update.url = (args: { catalog: number | { id: number } } | [catalog: number | { 
 
 /**
 * @see \App\Http\Controllers\CatalogController::update
- * @see app/Http/Controllers/CatalogController.php:57
+ * @see app/Http/Controllers/CatalogController.php:62
  * @route '/catalogs/{catalog}'
  */
-update.put = (args: { catalog: number | { id: number } } | [catalog: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
+update.put = (args: { catalog: string | number | { id: string | number } } | [catalog: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(args, options),
     method: 'put',
 })
 /**
 * @see \App\Http\Controllers\CatalogController::update
- * @see app/Http/Controllers/CatalogController.php:57
+ * @see app/Http/Controllers/CatalogController.php:62
  * @route '/catalogs/{catalog}'
  */
-update.patch = (args: { catalog: number | { id: number } } | [catalog: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
+update.patch = (args: { catalog: string | number | { id: string | number } } | [catalog: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
     url: update.url(args, options),
     method: 'patch',
 })
 
     /**
 * @see \App\Http\Controllers\CatalogController::update
- * @see app/Http/Controllers/CatalogController.php:57
+ * @see app/Http/Controllers/CatalogController.php:62
  * @route '/catalogs/{catalog}'
  */
-    const updateForm = (args: { catalog: number | { id: number } } | [catalog: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    const updateForm = (args: { catalog: string | number | { id: string | number } } | [catalog: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: update.url(args, {
                     [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                         _method: 'PUT',
@@ -498,10 +498,10 @@ update.patch = (args: { catalog: number | { id: number } } | [catalog: number | 
 
             /**
 * @see \App\Http\Controllers\CatalogController::update
- * @see app/Http/Controllers/CatalogController.php:57
+ * @see app/Http/Controllers/CatalogController.php:62
  * @route '/catalogs/{catalog}'
  */
-        updateForm.put = (args: { catalog: number | { id: number } } | [catalog: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        updateForm.put = (args: { catalog: string | number | { id: string | number } } | [catalog: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: update.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'PUT',
@@ -512,10 +512,10 @@ update.patch = (args: { catalog: number | { id: number } } | [catalog: number | 
         })
             /**
 * @see \App\Http\Controllers\CatalogController::update
- * @see app/Http/Controllers/CatalogController.php:57
+ * @see app/Http/Controllers/CatalogController.php:62
  * @route '/catalogs/{catalog}'
  */
-        updateForm.patch = (args: { catalog: number | { id: number } } | [catalog: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        updateForm.patch = (args: { catalog: string | number | { id: string | number } } | [catalog: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: update.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'PATCH',
@@ -528,10 +528,10 @@ update.patch = (args: { catalog: number | { id: number } } | [catalog: number | 
     update.form = updateForm
 /**
 * @see \App\Http\Controllers\CatalogController::destroy
- * @see app/Http/Controllers/CatalogController.php:72
+ * @see app/Http/Controllers/CatalogController.php:77
  * @route '/catalogs/{catalog}'
  */
-export const destroy = (args: { catalog: number | { id: number } } | [catalog: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+export const destroy = (args: { catalog: string | number | { id: string | number } } | [catalog: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
@@ -543,10 +543,10 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\CatalogController::destroy
- * @see app/Http/Controllers/CatalogController.php:72
+ * @see app/Http/Controllers/CatalogController.php:77
  * @route '/catalogs/{catalog}'
  */
-destroy.url = (args: { catalog: number | { id: number } } | [catalog: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+destroy.url = (args: { catalog: string | number | { id: string | number } } | [catalog: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { catalog: args }
     }
@@ -576,20 +576,20 @@ destroy.url = (args: { catalog: number | { id: number } } | [catalog: number | {
 
 /**
 * @see \App\Http\Controllers\CatalogController::destroy
- * @see app/Http/Controllers/CatalogController.php:72
+ * @see app/Http/Controllers/CatalogController.php:77
  * @route '/catalogs/{catalog}'
  */
-destroy.delete = (args: { catalog: number | { id: number } } | [catalog: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+destroy.delete = (args: { catalog: string | number | { id: string | number } } | [catalog: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: destroy.url(args, options),
     method: 'delete',
 })
 
     /**
 * @see \App\Http\Controllers\CatalogController::destroy
- * @see app/Http/Controllers/CatalogController.php:72
+ * @see app/Http/Controllers/CatalogController.php:77
  * @route '/catalogs/{catalog}'
  */
-    const destroyForm = (args: { catalog: number | { id: number } } | [catalog: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    const destroyForm = (args: { catalog: string | number | { id: string | number } } | [catalog: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
         action: destroy.url(args, {
                     [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                         _method: 'DELETE',
@@ -601,10 +601,10 @@ destroy.delete = (args: { catalog: number | { id: number } } | [catalog: number 
 
             /**
 * @see \App\Http\Controllers\CatalogController::destroy
- * @see app/Http/Controllers/CatalogController.php:72
+ * @see app/Http/Controllers/CatalogController.php:77
  * @route '/catalogs/{catalog}'
  */
-        destroyForm.delete = (args: { catalog: number | { id: number } } | [catalog: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        destroyForm.delete = (args: { catalog: string | number | { id: string | number } } | [catalog: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
             action: destroy.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'DELETE',

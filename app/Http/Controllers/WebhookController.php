@@ -106,6 +106,7 @@ class WebhookController extends Controller
             $chat = Chat::firstOrCreate(
                 ['customer_phone' => $from],
                 [
+                    'whatsapp_chat_id' => $from,
                     'customer_name' => $contactName,
                     'status' => Chat::STATUS_BOT,
                     'last_message_at' => now(),

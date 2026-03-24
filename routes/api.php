@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\StockController;
 use App\Http\Controllers\Api\OrderController;
@@ -17,6 +18,12 @@ use App\Http\Controllers\Api\CatalogController;
 | Semua routes dilindungi dengan API token authentication.
 |
 */
+
+// WhatsApp Webhook Routes - no auth required (verified via hub.verify_token)
+Route::prefix('webhook')->group(function () {
+    Route::get('/', [WebhookController::class, 'verify'])->name('webhook.verify');
+    Route::post('/', [WebhookController::class, 'receive'])->name('webhook.receive');
+});
 
 // Health check - tanpa auth untuk monitoring
 Route::get('/health', function () {

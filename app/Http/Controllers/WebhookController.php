@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Chat;
 use App\Models\Message;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 
@@ -82,8 +84,7 @@ class WebhookController extends Controller
     {
         $messageId = $message['id'] ?? null;
         $from = $message['from'] ?? null;
-        $timestamp = $message['timestamp'] ?? null;
-        $type = $message['type'] ?? 'unknown';
+        $type = $message['type'] ?? 'text';
 
         // Get contact name
         $contactName = null;
@@ -97,25 +98,61 @@ class WebhookController extends Controller
         // Parse message content based on type
         $content = $this->parseMessageContent($message, $type);
 
-        // Store message to database
-        $storedMessage = $this->storeMessage([
-            'wa_message_id' => $messageId,
-            'from_number' => $from,
-            'contact_name' => $contactName,
-            'type' => $type,
-            'content' => $content,
-            'raw_payload' => json_encode($message),
-            'timestamp' => $timestamp ? date('Y-m-d H:i:s', (int)$timestamp) : now(),
-        ]);
+        // Map WhatsApp type to our Message type constants
+        $messageType = $this->mapMessageType($type);
 
-        // Trigger Redis notification
-        $this->notifyViaRedis($storedMessage);
+        DB::transaction(function () use ($from, $contactName, $messageId, $messageType, $content) {
+            // Find or create chat for this customer
+            $chat = Chat::firstOrCreate(
+                ['customer_phone' => $from],
+                [
+                    'customer_name' => $contactName,
+                    'status' => Chat::STATUS_BOT,
+                    'last_message_at' => now(),
+                ]
+            );
+
+            // Update chat with latest info
+            $chat->update([
+                'customer_name' => $contactName ?? $chat->customer_name,
+                'last_message_at' => now(),
+            ]);
+
+            // Store message
+            $storedMessage = Message::create([
+                'chat_id' => $chat->id,
+                'wa_message_id' => $messageId,
+                'type' => $messageType,
+                'content' => json_encode($content),
+                'direction' => Message::DIRECTION_IN,
+            ]);
+
+            // Trigger Redis notification
+            $this->notifyViaRedis($storedMessage, $chat);
+        });
 
         Log::info('Message processed', [
             'message_id' => $messageId,
             'from' => $from,
             'type' => $type,
         ]);
+    }
+
+    /**
+     * Map WhatsApp message type to our Message type constant
+     *
+     * @param string $waType
+     * @return string
+     */
+    protected function mapMessageType(string $waType): string
+    {
+        return match ($waType) {
+            'text' => Message::TYPE_TEXT,
+            'image', 'video', 'audio', 'document', 'sticker' => Message::TYPE_IMAGE,
+            'button' => Message::TYPE_BUTTON,
+            'interactive' => Message::TYPE_LIST,
+            default => Message::TYPE_TEXT,
+        };
     }
 
     /**
@@ -286,23 +323,13 @@ class WebhookController extends Controller
     }
 
     /**
-     * Store message to database
-     *
-     * @param array $data
-     * @return Message
-     */
-    protected function storeMessage(array $data): Message
-    {
-        return Message::create($data);
-    }
-
-    /**
      * Notify via Redis for real-time updates
      *
      * @param Message $message
+     * @param Chat $chat
      * @return void
      */
-    protected function notifyViaRedis(Message $message): void
+    protected function notifyViaRedis(Message $message, Chat $chat): void
     {
         try {
             $channel = 'whatsapp:incoming_message';
@@ -310,12 +337,14 @@ class WebhookController extends Controller
                 'event' => 'new_message',
                 'data' => [
                     'id' => $message->id,
+                    'chat_id' => $chat->id,
                     'wa_message_id' => $message->wa_message_id,
-                    'from_number' => $message->from_number,
-                    'contact_name' => $message->contact_name,
+                    'customer_phone' => $chat->customer_phone,
+                    'customer_name' => $chat->customer_name,
                     'type' => $message->type,
                     'content' => $message->content,
-                    'timestamp' => $message->timestamp,
+                    'direction' => $message->direction,
+                    'created_at' => $message->created_at->toIso8601String(),
                 ],
             ]);
 

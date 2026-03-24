@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Catalog;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -11,12 +12,16 @@ class CatalogController extends Controller
 {
     public function index(): Response
     {
-        $catalogs = Catalog::withCount('products')
+        $catalogs = Catalog::with('products')
+            ->withCount('products')
             ->latest()
             ->paginate(15);
 
+        $products = Product::active()->get();
+
         return Inertia::render('Catalogs/Index', [
             'catalogs' => $catalogs,
+            'products' => $products,
         ]);
     }
 

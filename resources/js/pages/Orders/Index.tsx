@@ -1,4 +1,5 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
+import { usePage } from '@inertiajs/react'
 import {
   type Order,
   type OrderStatus,
@@ -10,97 +11,101 @@ import { OrderTable } from './OrderTable'
 import { OrderDetail } from './OrderDetail'
 import { ExportButton } from './ExportButton'
 
-// Mock data - replace with actual API call
-const mockOrders: Order[] = [
-  {
-    id: 1,
-    order_number: 'ORD-20240324-001',
-    customer: { name: 'Budi Santoso', phone: '6281234567890' },
-    items: [
-      { id: 1, product_id: 1, product_name: 'Telur Ayam Negeri', quantity: 5, price: 28000, subtotal: 140000 },
-      { id: 2, product_id: 3, product_name: 'Ayam Potong Segar', quantity: 2, price: 38000, subtotal: 76000 },
-    ],
-    pricing: { subtotal: 216000, discount: 10000, total: 206000, formatted_total: 'Rp 206.000' },
-    status: 'pending',
-    notes: 'Tolong diantar sebelum jam 12 siang',
-    source: 'whatsapp',
-    metadata: null,
-    created_at: '2024-03-24T08:30:00Z',
-    updated_at: '2024-03-24T08:30:00Z',
-  },
-  {
-    id: 2,
-    order_number: 'ORD-20240324-002',
-    customer: { name: 'Siti Rahayu', phone: '6287654321098' },
-    items: [
-      { id: 3, product_id: 2, product_name: 'Telur Ayam Kampung', quantity: 3, price: 45000, subtotal: 135000 },
-    ],
-    pricing: { subtotal: 135000, discount: 0, total: 135000, formatted_total: 'Rp 135.000' },
-    status: 'confirmed',
-    notes: null,
-    source: 'whatsapp',
-    metadata: null,
-    created_at: '2024-03-24T09:15:00Z',
-    updated_at: '2024-03-24T09:20:00Z',
-  },
-  {
-    id: 3,
-    order_number: 'ORD-20240323-015',
-    customer: { name: 'Ahmad Wijaya', phone: '6289876543210' },
-    items: [
-      { id: 4, product_id: 1, product_name: 'Telur Ayam Negeri', quantity: 10, price: 28000, subtotal: 280000 },
-    ],
-    pricing: { subtotal: 280000, discount: 20000, total: 260000, formatted_total: 'Rp 260.000' },
-    status: 'processing',
-    notes: 'Pelanggan tetap',
-    source: 'whatsapp',
-    metadata: null,
-    created_at: '2024-03-23T14:00:00Z',
-    updated_at: '2024-03-24T07:00:00Z',
-  },
-  {
-    id: 4,
-    order_number: 'ORD-20240323-012',
-    customer: { name: 'Dewi Lestari', phone: '6281122334455' },
-    items: [
-      { id: 5, product_id: 3, product_name: 'Ayam Potong Segar', quantity: 5, price: 38000, subtotal: 190000 },
-      { id: 6, product_id: 4, product_name: 'Daging Ayam Fillet', quantity: 2, price: 55000, subtotal: 110000 },
-    ],
-    pricing: { subtotal: 300000, discount: 0, total: 300000, formatted_total: 'Rp 300.000' },
-    status: 'completed',
-    notes: null,
-    source: 'whatsapp',
-    metadata: null,
-    created_at: '2024-03-23T10:00:00Z',
-    updated_at: '2024-03-23T16:00:00Z',
-  },
-  {
-    id: 5,
-    order_number: 'ORD-20240322-008',
-    customer: { name: 'Rudi Hermawan', phone: '6285566778899' },
-    items: [
-      { id: 7, product_id: 5, product_name: 'Telur Puyuh', quantity: 2, price: 35000, subtotal: 70000 },
-    ],
-    pricing: { subtotal: 70000, discount: 0, total: 70000, formatted_total: 'Rp 70.000' },
-    status: 'cancelled',
-    notes: 'Customer membatalkan pesanan',
-    source: 'whatsapp',
-    metadata: null,
-    created_at: '2024-03-22T11:00:00Z',
-    updated_at: '2024-03-22T11:30:00Z',
-  },
-]
+interface PageProps {
+  orders: {
+    data: Array<{
+      id: number
+      customer_name: string
+      customer_phone: string
+      status: OrderStatus
+      total: number
+      notes: string | null
+      created_at: string
+      updated_at: string
+      items: Array<{
+        id: number
+        product_id: number
+        quantity: number
+        price: number
+        subtotal: number
+        product?: {
+          id: number
+          name: string
+        }
+      }>
+    }>
+    current_page: number
+    last_page: number
+    per_page: number
+    total: number
+  }
+}
 
-const mockPagination: PaginationMeta = {
-  current_page: 1,
-  last_page: 3,
-  per_page: 15,
-  total: 42,
+// Transform backend data to frontend Order type
+function transformOrder(rawOrder: PageProps['orders']['data'][0]): Order {
+  return {
+    id: rawOrder.id,
+    order_number: `ORD-${rawOrder.id.toString().padStart(5, '0')}`,
+    customer: {
+      name: rawOrder.customer_name || 'Unknown',
+      phone: rawOrder.customer_phone || '-',
+    },
+    items: (rawOrder.items || []).map((item) => ({
+      id: item.id,
+      product_id: item.product_id,
+      product_name: item.product?.name || 'Unknown Product',
+      quantity: item.quantity,
+      price: item.price,
+      subtotal: item.subtotal,
+    })),
+    pricing: {
+      subtotal: rawOrder.total || 0,
+      discount: 0,
+      total: rawOrder.total || 0,
+      formatted_total: `Rp ${(rawOrder.total || 0).toLocaleString('id-ID')}`,
+    },
+    status: rawOrder.status,
+    notes: rawOrder.notes,
+    source: 'whatsapp',
+    metadata: null,
+    created_at: rawOrder.created_at,
+    updated_at: rawOrder.updated_at,
+  }
 }
 
 export default function OrdersIndex() {
-  const [orders, setOrders] = useState<Order[]>(mockOrders)
-  const [pagination, setPagination] = useState<PaginationMeta | null>(mockPagination)
+  const { orders: paginatedOrders } = usePage<PageProps>().props
+
+  // Transform raw orders to Order type
+  const initialOrders = useMemo(() => {
+    return (paginatedOrders?.data || []).map(transformOrder)
+  }, [paginatedOrders])
+
+  const [orders, setOrders] = useState<Order[]>(initialOrders)
+  const [pagination, setPagination] = useState<PaginationMeta | null>(
+    paginatedOrders
+      ? {
+          current_page: paginatedOrders.current_page,
+          last_page: paginatedOrders.last_page,
+          per_page: paginatedOrders.per_page,
+          total: paginatedOrders.total,
+        }
+      : null
+  )
+
+  // Update state when props change
+  useEffect(() => {
+    if (paginatedOrders?.data) {
+      setOrders(paginatedOrders.data.map(transformOrder))
+      setPagination({
+        current_page: paginatedOrders.current_page,
+        last_page: paginatedOrders.last_page,
+        per_page: paginatedOrders.per_page,
+        total: paginatedOrders.total,
+      })
+    }
+  }, [paginatedOrders])
+
   const [filters, setFilters] = useState<FiltersType>({
     search: '',
     status: '',

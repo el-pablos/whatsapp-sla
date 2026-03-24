@@ -1,4 +1,5 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
+import { usePage } from '@inertiajs/react'
 import {
   type Product,
   type ProductFilters as FiltersType,
@@ -12,77 +13,69 @@ import { ProductCardList } from './ProductCard'
 import { ProductForm } from './ProductForm'
 import { StockUpdateModal } from './StockUpdateModal'
 
-// Mock data - replace with actual API call
-const mockProducts: Product[] = [
-  {
-    id: 1,
-    name: 'Telur Ayam Negeri',
-    type: 'telur',
-    description: 'Telur ayam negeri segar, ukuran medium',
-    price: 28000,
-    stock: 150,
-    unit: 'kg',
-    image_url: null,
-    status: 'active',
-    created_at: '2024-01-15T10:00:00Z',
-    updated_at: '2024-01-15T10:00:00Z',
-  },
-  {
-    id: 2,
-    name: 'Telur Ayam Kampung',
-    type: 'telur',
-    description: 'Telur ayam kampung organik',
-    price: 45000,
-    stock: 50,
-    unit: 'kg',
-    image_url: null,
-    status: 'active',
-    created_at: '2024-01-14T10:00:00Z',
-    updated_at: '2024-01-14T10:00:00Z',
-  },
-  {
-    id: 3,
-    name: 'Ayam Potong Segar',
-    type: 'ayam',
-    description: 'Ayam potong segar siap masak',
-    price: 38000,
-    stock: 75,
-    unit: 'kg',
-    image_url: null,
-    status: 'active',
-    created_at: '2024-01-13T10:00:00Z',
-    updated_at: '2024-01-13T10:00:00Z',
-  },
-  {
-    id: 4,
-    name: 'Daging Ayam Fillet',
-    type: 'ayam',
-    description: 'Daging ayam tanpa tulang',
-    price: 55000,
-    stock: 0,
-    unit: 'kg',
-    image_url: null,
-    status: 'out_of_stock',
-    created_at: '2024-01-12T10:00:00Z',
-    updated_at: '2024-01-12T10:00:00Z',
-  },
-  {
-    id: 5,
-    name: 'Telur Puyuh',
-    type: 'telur',
-    description: 'Telur puyuh segar',
-    price: 35000,
-    stock: 30,
-    unit: 'kg',
-    image_url: null,
-    status: 'inactive',
-    created_at: '2024-01-11T10:00:00Z',
-    updated_at: '2024-01-11T10:00:00Z',
-  },
-]
+interface BackendProduct {
+  id: number
+  name: string
+  type: 'telur' | 'ayam'
+  description?: string
+  price: number
+  stock: number
+  unit: string
+  image?: string
+  status: 'active' | 'inactive'
+  created_at: string
+  updated_at: string
+}
+
+interface PageProps {
+  products: {
+    data: BackendProduct[]
+    current_page: number
+    last_page: number
+    per_page: number
+    total: number
+  }
+}
+
+// Transform backend product to frontend Product type
+function transformProduct(raw: BackendProduct): Product {
+  let status: Product['status'] = raw.status
+  // Set out_of_stock if stock is 0
+  if (raw.stock === 0 && raw.status === 'active') {
+    status = 'out_of_stock'
+  }
+
+  return {
+    id: raw.id,
+    name: raw.name,
+    type: raw.type,
+    description: raw.description || '',
+    price: raw.price,
+    stock: raw.stock,
+    unit: raw.unit,
+    image_url: raw.image || null,
+    status: status,
+    created_at: raw.created_at,
+    updated_at: raw.updated_at,
+  }
+}
 
 export default function ProductsIndex() {
-  const [products, setProducts] = useState<Product[]>(mockProducts)
+  const { products: paginatedProducts } = usePage<PageProps>().props
+
+  // Transform raw products
+  const initialProducts = useMemo(() => {
+    return (paginatedProducts?.data || []).map(transformProduct)
+  }, [paginatedProducts])
+
+  const [products, setProducts] = useState<Product[]>(initialProducts)
+
+  // Update products when props change
+  useEffect(() => {
+    if (paginatedProducts?.data) {
+      setProducts(paginatedProducts.data.map(transformProduct))
+    }
+  }, [paginatedProducts])
   const [filters, setFilters] = useState<FiltersType>({ search: '', type: '', status: '' })
   const [sortConfig, setSortConfig] = useState<SortConfig>({ field: 'name', direction: 'asc' })
   const [isLoading, setIsLoading] = useState(false)

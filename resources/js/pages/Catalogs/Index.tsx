@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { usePage } from '@inertiajs/react'
 import CatalogCard from './CatalogCard'
 import CatalogForm from './CatalogForm'
@@ -26,17 +26,86 @@ export interface Catalog {
   status: string
 }
 
+interface BackendProduct {
+  id: number
+  name: string
+  price: number
+  unit: string
+  stock: number
+  type: 'telur' | 'ayam'
+  image?: string
+  status: string
+}
+
+interface BackendCatalog {
+  id: number
+  name: string
+  description: string
+  image?: string
+  products: BackendProduct[]
+  products_count?: number
+  created_at: string
+  updated_at: string
+  status: string
+}
+
 interface PageProps {
   catalogs: {
-    data: Catalog[]
+    data: BackendCatalog[]
+  }
+  products: BackendProduct[]
+}
+
+// Transform backend catalog to frontend Catalog type
+function transformCatalog(raw: BackendCatalog): Catalog {
+  return {
+    id: raw.id,
+    name: raw.name,
+    description: raw.description || '',
+    coverImage: raw.image,
+    products: (raw.products || []).map((p) => ({
+      id: p.id,
+      name: p.name,
+      price: p.price,
+      unit: p.unit,
+      stock: p.stock,
+      category: p.type,
+      image: p.image,
+    })),
+    products_count: raw.products_count,
+    createdAt: raw.created_at,
+    updatedAt: raw.updated_at,
+    status: raw.status,
+  }
+}
+
+// Transform backend product to frontend Product type
+function transformProduct(raw: BackendProduct): Product {
+  return {
+    id: raw.id,
+    name: raw.name,
+    price: raw.price,
+    unit: raw.unit,
+    stock: raw.stock,
+    category: raw.type,
+    image: raw.image,
   }
 }
 
 export default function CatalogsPage() {
-  const { catalogs: paginatedCatalogs } = usePage<PageProps>().props
-  const initialCatalogs = paginatedCatalogs?.data || []
+  const { catalogs: paginatedCatalogs, products: rawProducts } = usePage<PageProps>().props
+  const initialCatalogs = (paginatedCatalogs?.data || []).map(transformCatalog)
+  const availableProducts = (rawProducts || []).map(transformProduct)
 
   const [catalogs, setCatalogs] = useState<Catalog[]>(initialCatalogs)
+
+  // Update catalogs when props change
+  useEffect(() => {
+    if (paginatedCatalogs?.data) {
+      setCatalogs(paginatedCatalogs.data.map(transformCatalog))
+    }
+  }, [paginatedCatalogs])
+
   const [showForm, setShowForm] = useState(false)
   const [editingCatalog, setEditingCatalog] = useState<Catalog | null>(null)
   const [previewCatalog, setPreviewCatalog] = useState<Catalog | null>(null)

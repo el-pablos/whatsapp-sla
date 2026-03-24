@@ -5,10 +5,18 @@ import os
 import signal
 import sys
 import logging
+
+# Tambahkan parent directory ke path agar bisa import bot module
+# Ini memungkinkan run.py dijalankan langsung dengan `python bot/run.py`
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
 from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+# Load environment variables dari root project
+env_path = os.path.join(parent_dir, '.env')
+load_dotenv(env_path)
 
 from bot.app import create_app
 from bot.main import shutdown_executor

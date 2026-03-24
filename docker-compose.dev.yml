@@ -1,0 +1,123 @@
+# WhatsApp SLA Monitor - Docker Compose Development
+# Override untuk development environment
+
+version: '3.9'
+
+services:
+  # PHP-FPM Laravel Application (Development)
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      target: development
+    container_name: slawa_app_dev
+    volumes:
+      - ./:/var/www/html
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - XDEBUG_MODE=develop,debug
+      - XDEBUG_CONFIG=client_host=host.docker.internal
+      - DB_HOST=mysql
+      - REDIS_HOST=redis
+
+  # Nginx Web Server
+  nginx:
+    container_name: slawa_nginx_dev
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www/html:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+
+  # MySQL Database
+  mysql:
+    container_name: slawa_mysql_dev
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: slawa_db
+      MYSQL_USER: slawa_user
+      MYSQL_PASSWORD: slawa_secret
+
+  # Redis Cache & Queue
+  redis:
+    container_name: slawa_redis_dev
+    ports:
+      - "6379:6379"
+
+  # Python WhatsApp Bot (Development)
+  python-bot:
+    build:
+      context: .
+      dockerfile: docker/python/Dockerfile
+      target: development
+    container_name: slawa_bot_dev
+    volumes:
+      - ./bot:/app
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - API_URL=http://nginx/api
+      - DEBUG=true
+
+  # Laravel Queue Worker (Development)
+  queue:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      target: development
+    container_name: slawa_queue_dev
+    volumes:
+      - ./:/var/www/html
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - DB_HOST=mysql
+      - REDIS_HOST=redis
+
+  # Laravel Scheduler (Development)
+  scheduler:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      target: development
+    container_name: slawa_scheduler_dev
+    volumes:
+      - ./:/var/www/html
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - DB_HOST=mysql
+      - REDIS_HOST=redis
+
+  # phpMyAdmin (Development Only)
+  phpmyadmin:
+    image: phpmyadmin:5.2
+    container_name: slawa_phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: rootpassword
+    networks:
+      - slawa_network
+    depends_on:
+      - mysql
+
+  # Redis Commander (Development Only)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: slawa_redis_commander
+    restart: unless-stopped
+    ports:
+      - "8082:8081"
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    networks:
+      - slawa_network
+    depends_on:
+      - redis

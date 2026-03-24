@@ -1,0 +1,152 @@
+# WhatsApp SLA Monitor - Docker Compose
+# Production-ready configuration
+
+version: '3.9'
+
+services:
+  # PHP-FPM Laravel Application
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      target: production
+    container_name: slawa_app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./storage:/var/www/html/storage
+      - ./bootstrap/cache:/var/www/html/bootstrap/cache
+    environment:
+      - APP_ENV=production
+      - DB_HOST=mysql
+      - REDIS_HOST=redis
+    networks:
+      - slawa_network
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # Nginx Web Server
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: slawa_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./public:/var/www/html/public:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - slawa_network
+    depends_on:
+      - app
+
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: slawa_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${DB_DATABASE:-slawa_db}
+      MYSQL_USER: ${DB_USERNAME:-slawa_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-slawa_secret}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - slawa_network
+
+  # Redis Cache & Queue
+  redis:
+    image: redis:7.2-alpine
+    container_name: slawa_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - slawa_network
+
+  # Python WhatsApp Bot
+  python-bot:
+    build:
+      context: .
+      dockerfile: docker/python/Dockerfile
+      target: production
+    container_name: slawa_bot
+    restart: unless-stopped
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - API_URL=http://nginx/api
+    networks:
+      - slawa_network
+    depends_on:
+      - redis
+      - app
+
+  # Laravel Queue Worker
+  queue:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      target: production
+    container_name: slawa_queue
+    restart: unless-stopped
+    working_dir: /var/www/html
+    command: php artisan queue:work redis --sleep=3 --tries=3 --max-time=3600
+    volumes:
+      - ./storage:/var/www/html/storage
+    environment:
+      - APP_ENV=production
+      - DB_HOST=mysql
+      - REDIS_HOST=redis
+    networks:
+      - slawa_network
+    depends_on:
+      - app
+      - redis
+
+  # Laravel Scheduler
+  scheduler:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      target: production
+    container_name: slawa_scheduler
+    restart: unless-stopped
+    working_dir: /var/www/html
+    command: sh -c "while true; do php artisan schedule:run --verbose --no-interaction; sleep 60; done"
+    volumes:
+      - ./storage:/var/www/html/storage
+    environment:
+      - APP_ENV=production
+      - DB_HOST=mysql
+      - REDIS_HOST=redis
+    networks:
+      - slawa_network
+    depends_on:
+      - app
+
+networks:
+  slawa_network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local

@@ -30,7 +30,8 @@ class CatalogController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'is_active' => 'boolean',
+            'status' => 'required|in:active,inactive',
+            'image' => 'nullable|string',
         ]);
 
         Catalog::create($validated);
@@ -58,7 +59,8 @@ class CatalogController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'is_active' => 'boolean',
+            'status' => 'required|in:active,inactive',
+            'image' => 'nullable|string',
         ]);
 
         $catalog->update($validated);

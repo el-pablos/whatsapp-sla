@@ -6,9 +6,10 @@ use App\Models\User;
 describe('Product API', function () {
 
     describe('GET /api/products', function () {
+        // fix: gunakan status field sesuai schema products - 2026-03-24
         it('returns active products', function () {
-            Product::factory()->count(3)->create(['is_active' => true]);
-            Product::factory()->count(2)->create(['is_active' => false]);
+            Product::factory()->count(3)->create(['status' => Product::STATUS_ACTIVE]);
+            Product::factory()->count(2)->create(['status' => Product::STATUS_INACTIVE]);
 
             $response = $this->getJson('/api/products');
 
@@ -18,8 +19,8 @@ describe('Product API', function () {
         });
 
         it('returns products ordered by name', function () {
-            Product::factory()->create(['name' => 'Zebra', 'is_active' => true]);
-            Product::factory()->create(['name' => 'Apple', 'is_active' => true]);
+            Product::factory()->create(['name' => 'Zebra', 'status' => Product::STATUS_ACTIVE]);
+            Product::factory()->create(['name' => 'Apple', 'status' => Product::STATUS_ACTIVE]);
 
             $response = $this->getJson('/api/products');
 
@@ -30,7 +31,7 @@ describe('Product API', function () {
         });
 
         it('returns empty array when no active products', function () {
-            Product::factory()->count(2)->create(['is_active' => false]);
+            Product::factory()->count(2)->create(['status' => Product::STATUS_INACTIVE]);
 
             $response = $this->getJson('/api/products');
 
@@ -66,9 +67,9 @@ describe('Product API', function () {
 
     describe('GET /api/products/type/{type}', function () {
         it('returns products filtered by type', function () {
-            Product::factory()->create(['type' => 'telur', 'is_active' => true]);
-            Product::factory()->create(['type' => 'telur', 'is_active' => true]);
-            Product::factory()->create(['type' => 'ayam', 'is_active' => true]);
+            Product::factory()->create(['type' => 'telur', 'status' => Product::STATUS_ACTIVE]);
+            Product::factory()->create(['type' => 'telur', 'status' => Product::STATUS_ACTIVE]);
+            Product::factory()->create(['type' => 'ayam', 'status' => Product::STATUS_ACTIVE]);
 
             $response = $this->getJson('/api/products/type/telur');
 
@@ -78,7 +79,7 @@ describe('Product API', function () {
         });
 
         it('returns empty array for non-existent type', function () {
-            Product::factory()->create(['type' => 'telur', 'is_active' => true]);
+            Product::factory()->create(['type' => 'telur', 'status' => Product::STATUS_ACTIVE]);
 
             $response = $this->getJson('/api/products/type/invalid');
 
@@ -87,7 +88,7 @@ describe('Product API', function () {
         });
 
         it('does not return inactive products', function () {
-            Product::factory()->create(['type' => 'telur', 'is_active' => false]);
+            Product::factory()->create(['type' => 'telur', 'status' => Product::STATUS_INACTIVE]);
 
             $response = $this->getJson('/api/products/type/telur');
 

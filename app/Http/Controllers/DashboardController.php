@@ -68,9 +68,7 @@ class DashboardController extends Controller
                 'month' => Order::where('created_at', '>=', $monthStart)->count(),
             ],
             'pending_orders' => Order::where('status', 'pending')->count(),
-            'active_chats' => Chat::where('status', 'active')
-                ->orWhere('status', 'waiting')
-                ->count(),
+            'active_chats' => Chat::whereIn('status', ['active', 'bot', 'admin'])->count(),
             'total_products' => Product::count(),
             'low_stock_products' => Product::where('stock', '<=', 10)
                 ->where('stock', '>', 0)
@@ -83,11 +81,18 @@ class DashboardController extends Controller
      */
     private function getRecentOrdersData(): array
     {
-        return Order::with(['customer:id,name,phone'])
-            ->select(['id', 'order_number', 'customer_id', 'total', 'status', 'created_at'])
+        return Order::select(['id', 'customer_name', 'customer_phone', 'total', 'status', 'created_at'])
             ->latest()
             ->take(10)
             ->get()
+            ->map(fn($o) => [
+                'id' => $o->id,
+                'order_number' => 'ORD-' . str_pad($o->id, 5, '0', STR_PAD_LEFT),
+                'customer_name' => $o->customer_name,
+                'total' => $o->total,
+                'status' => $o->status,
+                'created_at' => $o->created_at->toISOString(),
+            ])
             ->toArray();
     }
 
@@ -96,12 +101,19 @@ class DashboardController extends Controller
      */
     private function getActiveChatsData(): array
     {
-        return Chat::with(['customer:id,name,phone'])
-            ->select(['id', 'customer_id', 'last_message', 'status', 'last_message_at'])
-            ->whereIn('status', ['active', 'waiting'])
+        return Chat::with(['latestMessage'])
+            ->whereIn('status', ['active', 'bot', 'admin'])
             ->orderByDesc('last_message_at')
             ->take(10)
             ->get()
+            ->map(fn($c) => [
+                'id' => $c->id,
+                'customer_name' => $c->customer_name,
+                'customer_phone' => $c->customer_phone,
+                'last_message' => $c->latestMessage?->content ?? '-',
+                'status' => $c->status,
+                'last_message_at' => $c->last_message_at?->toISOString(),
+            ])
             ->toArray();
     }
 }

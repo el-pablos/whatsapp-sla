@@ -11,7 +11,7 @@ class ProductController extends Controller
 {
     public function index(): Response
     {
-        $products = Product::with('catalog')
+        $products = Product::with('catalogs')
             ->latest()
             ->paginate(15);
 
@@ -22,17 +22,23 @@ class ProductController extends Controller
 
     public function create(): Response
     {
-        return Inertia::render('Products/Create');
+        return Inertia::render('Products/Create', [
+            'types' => Product::getTypes(),
+            'units' => Product::getUnits(),
+            'sizes' => Product::getSizes(),
+        ]);
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'type' => 'required|in:jasa,produk',
+            'type' => 'required|in:telur,ayam',
             'price' => 'required|numeric|min:0',
+            'stock' => 'required|integer|min:0',
+            'unit' => 'required|in:kg,pcs,peti,ekor',
+            'size' => 'nullable|in:S,M,L,XL',
             'description' => 'nullable|string',
-            'catalog_id' => 'nullable|exists:catalogs,id',
         ]);
 
         Product::create($validated);
@@ -44,7 +50,7 @@ class ProductController extends Controller
     public function show(Product $product): Response
     {
         return Inertia::render('Products/Show', [
-            'product' => $product->load('catalog', 'priceHistories'),
+            'product' => $product->load('catalogs', 'priceHistories'),
         ]);
     }
 
@@ -52,6 +58,9 @@ class ProductController extends Controller
     {
         return Inertia::render('Products/Edit', [
             'product' => $product,
+            'types' => Product::getTypes(),
+            'units' => Product::getUnits(),
+            'sizes' => Product::getSizes(),
         ]);
     }
 
@@ -59,10 +68,12 @@ class ProductController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'type' => 'required|in:jasa,produk',
+            'type' => 'required|in:telur,ayam',
             'price' => 'required|numeric|min:0',
+            'stock' => 'required|integer|min:0',
+            'unit' => 'required|in:kg,pcs,peti,ekor',
+            'size' => 'nullable|in:S,M,L,XL',
             'description' => 'nullable|string',
-            'catalog_id' => 'nullable|exists:catalogs,id',
         ]);
 
         $product->update($validated);

@@ -162,3 +162,35 @@ class WhatsAppClient:
             "message_id": message_id
         }
         return self._send_request(payload)
+
+    def send_template(self, phone: str, template_name: str = "hello_world", language_code: str = "en_US", components: list = None) -> dict:
+        """
+        Kirim template message (WAJIB untuk memulai conversation di sandbox mode)
+
+        Args:
+            phone: Nomor telepon dengan country code (contoh: 6282210819939)
+            template_name: Nama template yang sudah di-approve (default: hello_world)
+            language_code: Kode bahasa template (default: en_US)
+            components: Optional template components untuk dynamic content
+
+        Returns:
+            Response dari WhatsApp API
+        """
+        template_data = {
+            "name": template_name,
+            "language": {
+                "code": language_code
+            }
+        }
+
+        if components:
+            template_data["components"] = components
+
+        payload = {
+            "messaging_product": "whatsapp",
+            "recipient_type": "individual",
+            "to": phone,
+            "type": "template",
+            "template": template_data
+        }
+        return self._send_request(payload)

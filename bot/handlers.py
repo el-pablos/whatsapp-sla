@@ -669,3 +669,32 @@ if __name__ == "__main__":
     handle_message(test_phone, "pesan")
 
     print("\n=== Tests completed ===")
+
+
+def handle_status_update(status: Dict[str, Any]) -> None:
+    """
+    Handle status update dari WhatsApp (delivered, read, dll)
+
+    Args:
+        status: Status update dari webhook
+    """
+    status_id = status.get("id", "")
+    recipient_id = status.get("recipient_id", "")
+    status_type = status.get("status", "")
+    timestamp = status.get("timestamp", "")
+
+    # Log status update
+    print(f"[STATUS] Message {status_id} to {recipient_id}: {status_type} at {timestamp}")
+
+    # Bisa di-extend untuk:
+    # - Update database status pesan
+    # - Kirim notifikasi ke admin
+    # - Analytics
+
+    # Contoh: Update status di Laravel
+    if status_type in ["delivered", "read", "failed"]:
+        call_laravel_api("messages/status", "POST", {
+            "message_id": status_id,
+            "status": status_type,
+            "timestamp": timestamp
+        })

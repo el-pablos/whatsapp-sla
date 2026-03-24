@@ -12,6 +12,7 @@ sessions: Dict[str, Dict[str, Any]] = {}
 
 # Config dari environment
 LARAVEL_API_URL = os.getenv("API_URL", os.getenv("APP_URL", "http://localhost") + "/api")
+API_BOT_TOKEN = os.getenv("API_BOT_TOKEN", "")
 WA_API_URL = os.getenv("WA_API_URL", "https://graph.facebook.com/v18.0")
 WA_PHONE_NUMBER_ID = os.getenv("WA_PHONE_NUMBER_ID", "")
 WA_ACCESS_TOKEN = os.getenv("WA_ACCESS_TOKEN", "")
@@ -133,7 +134,11 @@ def send_whatsapp_list(phone: str, body: str, button_text: str, sections: list) 
 def call_laravel_api(endpoint: str, method: str = "GET", data: Optional[Dict] = None) -> Dict:
     """Call Laravel API untuk ambil data"""
     url = f"{LARAVEL_API_URL}/{endpoint}"
-    headers = {"Content-Type": "application/json", "Accept": "application/json"}
+    headers = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": f"Bearer {API_BOT_TOKEN}"
+    }
 
     try:
         if method == "GET":

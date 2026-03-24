@@ -4,35 +4,56 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Message extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'wa_message_id',
-        'from_number',
-        'contact_name',
-        'type',
+        'chat_id',
         'content',
-        'raw_payload',
-        'timestamp',
-        'status',
-        'replied_at',
-    ];
-
-    protected $casts = [
-        'content' => 'array',
-        'timestamp' => 'datetime',
-        'replied_at' => 'datetime',
+        'type',
+        'direction',
+        'wa_message_id',
     ];
 
     /**
-     * Scope for unread messages
+     * Type constants
      */
-    public function scopeUnread($query)
+    const TYPE_TEXT = 'text';
+    const TYPE_IMAGE = 'image';
+    const TYPE_BUTTON = 'button';
+    const TYPE_LIST = 'list';
+
+    /**
+     * Direction constants
+     */
+    const DIRECTION_IN = 'in';
+    const DIRECTION_OUT = 'out';
+
+    /**
+     * Get the chat that owns this message
+     */
+    public function chat(): BelongsTo
     {
-        return $query->where('status', 'unread');
+        return $this->belongsTo(Chat::class);
+    }
+
+    /**
+     * Scope for incoming messages (from customer)
+     */
+    public function scopeIncoming($query)
+    {
+        return $query->where('direction', self::DIRECTION_IN);
+    }
+
+    /**
+     * Scope for outgoing messages (from system/admin)
+     */
+    public function scopeOutgoing($query)
+    {
+        return $query->where('direction', self::DIRECTION_OUT);
     }
 
     /**
@@ -44,40 +65,42 @@ class Message extends Model
     }
 
     /**
-     * Scope for messages from specific number
+     * Scope for text messages
      */
-    public function scopeFromNumber($query, string $number)
+    public function scopeTextOnly($query)
     {
-        return $query->where('from_number', $number);
+        return $query->where('type', self::TYPE_TEXT);
     }
 
     /**
-     * Mark message as read
+     * Check if message is incoming
      */
-    public function markAsRead(): bool
+    public function isIncoming(): bool
     {
-        return $this->update(['status' => 'read']);
+        return $this->direction === self::DIRECTION_IN;
     }
 
     /**
-     * Mark message as replied
+     * Check if message is outgoing
      */
-    public function markAsReplied(): bool
+    public function isOutgoing(): bool
     {
-        return $this->update([
-            'status' => 'replied',
-            'replied_at' => now(),
-        ]);
+        return $this->direction === self::DIRECTION_OUT;
     }
 
     /**
-     * Get text content for text messages
+     * Check if message is text type
      */
-    public function getTextAttribute(): ?string
+    public function isText(): bool
     {
-        if ($this->type === 'text') {
-            return $this->content['body'] ?? null;
-        }
-        return null;
+        return $this->type === self::TYPE_TEXT;
+    }
+
+    /**
+     * Check if message is image type
+     */
+    public function isImage(): bool
+    {
+        return $this->type === self::TYPE_IMAGE;
     }
 }

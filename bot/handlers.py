@@ -11,7 +11,7 @@ from datetime import datetime
 sessions: Dict[str, Dict[str, Any]] = {}
 
 # Config dari environment
-LARAVEL_API_URL = os.getenv("APP_URL", "http://localhost") + "/api"
+LARAVEL_API_URL = os.getenv("API_URL", os.getenv("APP_URL", "http://localhost") + "/api")
 WA_API_URL = os.getenv("WA_API_URL", "https://graph.facebook.com/v18.0")
 WA_PHONE_NUMBER_ID = os.getenv("WA_PHONE_NUMBER_ID", "")
 WA_ACCESS_TOKEN = os.getenv("WA_ACCESS_TOKEN", "")

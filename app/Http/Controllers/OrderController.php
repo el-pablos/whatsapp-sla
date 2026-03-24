@@ -11,7 +11,7 @@ class OrderController extends Controller
 {
     public function index(): Response
     {
-        $orders = Order::with(['chat', 'items.product'])
+        $orders = Order::with(['items.product'])
             ->latest()
             ->paginate(15);
 
@@ -28,9 +28,11 @@ class OrderController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'chat_id' => 'required|exists:chats,id',
-            'status' => 'required|in:pending,confirmed,completed,cancelled',
-            'total_amount' => 'required|numeric|min:0',
+            'customer_name' => 'required|string|max:255',
+            'customer_phone' => 'required|string|max:20',
+            'status' => 'required|in:pending,confirmed,processing,completed,cancelled',
+            'total' => 'required|numeric|min:0',
+            'notes' => 'nullable|string',
         ]);
 
         Order::create($validated);
@@ -42,7 +44,7 @@ class OrderController extends Controller
     public function show(Order $order): Response
     {
         return Inertia::render('Orders/Show', [
-            'order' => $order->load(['chat', 'items.product']),
+            'order' => $order->load(['items.product']),
         ]);
     }
 
@@ -56,8 +58,9 @@ class OrderController extends Controller
     public function update(Request $request, Order $order)
     {
         $validated = $request->validate([
-            'status' => 'required|in:pending,confirmed,completed,cancelled',
-            'total_amount' => 'required|numeric|min:0',
+            'status' => 'required|in:pending,confirmed,processing,completed,cancelled',
+            'total' => 'required|numeric|min:0',
+            'notes' => 'nullable|string',
         ]);
 
         $order->update($validated);

@@ -4,31 +4,21 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Order extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     protected $fillable = [
-        'order_number',
-        'customer_phone',
         'customer_name',
-        'items',
-        'subtotal',
-        'discount',
-        'total',
+        'customer_phone',
         'status',
+        'total',
         'notes',
-        'source',
-        'metadata',
     ];
 
     protected $casts = [
-        'items' => 'array',
-        'metadata' => 'array',
-        'subtotal' => 'decimal:2',
-        'discount' => 'decimal:2',
         'total' => 'decimal:2',
     ];
 
@@ -47,6 +37,26 @@ class Order extends Model
             self::STATUS_COMPLETED,
             self::STATUS_CANCELLED,
         ];
+    }
+
+    public function items(): HasMany
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    public function calculateTotal(): float
+    {
+        $total = $this->items()->sum('subtotal');
+        $this->update(['total' => $total]);
+        return (float) $total;
+    }
+
+    public function updateStatus(string $status): bool
+    {
+        if (!in_array($status, self::statuses())) {
+            return false;
+        }
+        return $this->update(['status' => $status]);
     }
 
     public function scopeByStatus($query, string $status)

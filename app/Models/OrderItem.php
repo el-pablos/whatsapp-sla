@@ -13,8 +13,7 @@ class OrderItem extends Model
     protected $fillable = [
         'order_id',
         'product_id',
-        'product_name',
-        'quantity',
+        'qty',
         'price',
         'subtotal',
     ];
@@ -22,7 +21,7 @@ class OrderItem extends Model
     protected function casts(): array
     {
         return [
-            'quantity' => 'integer',
+            'qty' => 'integer',
             'price' => 'decimal:2',
             'subtotal' => 'decimal:2',
         ];
@@ -33,11 +32,11 @@ class OrderItem extends Model
         parent::boot();
 
         static::creating(function ($item) {
-            $item->subtotal = $item->quantity * $item->price;
+            $item->subtotal = $item->qty * $item->price;
         });
 
         static::updating(function ($item) {
-            $item->subtotal = $item->quantity * $item->price;
+            $item->subtotal = $item->qty * $item->price;
         });
     }
 

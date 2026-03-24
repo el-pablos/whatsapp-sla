@@ -1,9 +1,10 @@
+import { usePage } from '@inertiajs/react'
 import StatCard from './StatCard'
 import RecentOrdersTable from './RecentOrdersTable'
 import ActiveChatsList from './ActiveChatsList'
 import QuickActions from './QuickActions'
 
-// Icons as simple SVG components
+// Icons
 const ShoppingBagIcon = () => (
   <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
@@ -22,9 +23,9 @@ const CubeIcon = () => (
   </svg>
 )
 
-const CurrencyIcon = () => (
+const WarningIcon = () => (
   <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
   </svg>
 )
 
@@ -52,42 +53,70 @@ const ChartIcon = () => (
   </svg>
 )
 
-// Demo data - in production, this would come from API/props
-const demoStats = {
-  totalOrders: 156,
-  ordersTrend: { value: 12, isPositive: true },
-  activeChats: 23,
-  chatsTrend: { value: 5, isPositive: true },
-  totalProducts: 48,
-  todayRevenue: 15750000,
-  revenueTrend: { value: 8, isPositive: true },
+interface Stats {
+  orders: { today: number; week: number; month: number }
+  pending_orders: number
+  active_chats: number
+  total_products: number
+  low_stock_products: number
 }
 
-const demoOrders = [
-  { id: 'ORD001', customer: 'Ahmad Rizki', product: 'Kaos Polos XL', amount: 150000, status: 'completed' as const, createdAt: '2026-03-24T10:30:00' },
-  { id: 'ORD002', customer: 'Siti Nurhaliza', product: 'Hijab Premium', amount: 250000, status: 'processing' as const, createdAt: '2026-03-24T10:15:00' },
-  { id: 'ORD003', customer: 'Budi Santoso', product: 'Celana Jeans', amount: 350000, status: 'pending' as const, createdAt: '2026-03-24T09:45:00' },
-  { id: 'ORD004', customer: 'Dewi Lestari', product: 'Dress Casual', amount: 275000, status: 'completed' as const, createdAt: '2026-03-24T09:30:00' },
-  { id: 'ORD005', customer: 'Eko Prasetyo', product: 'Sepatu Sneakers', amount: 450000, status: 'processing' as const, createdAt: '2026-03-24T09:00:00' },
-]
+interface Order {
+  id: number
+  order_number: string
+  customer_name: string
+  total: number
+  status: string
+  created_at: string
+}
 
-const demoChats = [
-  { id: 'CHAT001', customerName: 'Maria Santos', customerPhone: '+62812345678', lastMessage: 'Kak, barangnya sudah dikirim belum ya?', unreadCount: 3, lastMessageAt: '2026-03-24T11:30:00', isUrgent: true },
-  { id: 'CHAT002', customerName: 'John Doe', customerPhone: '+62898765432', lastMessage: 'Terima kasih kak', unreadCount: 0, lastMessageAt: '2026-03-24T11:15:00', isUrgent: false },
-  { id: 'CHAT003', customerName: 'Lisa Permata', customerPhone: '+62856789012', lastMessage: 'Ada warna lain ga kak?', unreadCount: 2, lastMessageAt: '2026-03-24T10:45:00', isUrgent: false },
-  { id: 'CHAT004', customerName: 'Rudi Hartono', customerPhone: '+62878901234', lastMessage: 'Mau order dong kak', unreadCount: 1, lastMessageAt: '2026-03-24T10:30:00', isUrgent: false },
-]
+interface Chat {
+  id: number
+  customer_name: string
+  customer_phone: string
+  last_message: string
+  status: string
+  last_message_at: string
+}
+
+interface PageProps {
+  stats: Stats
+  recentOrders: Order[]
+  activeChats: Chat[]
+}
 
 export default function Dashboard() {
+  const { stats, recentOrders, activeChats } = usePage<PageProps>().props
+
+  // Transform data untuk komponen
+  const orders = (recentOrders || []).map(o => ({
+    id: o.order_number,
+    customer: o.customer_name || 'Customer',
+    product: '-',
+    amount: o.total || 0,
+    status: o.status as 'pending' | 'processing' | 'completed',
+    createdAt: o.created_at,
+  }))
+
+  const chats = (activeChats || []).map(c => ({
+    id: String(c.id),
+    customerName: c.customer_name || 'Customer',
+    customerPhone: c.customer_phone || '-',
+    lastMessage: c.last_message || '-',
+    unreadCount: 0,
+    lastMessageAt: c.last_message_at || new Date().toISOString(),
+    isUrgent: c.status === 'bot',
+  }))
+
   const quickActions = [
-    { id: 'new-order', label: 'Order Baru', icon: <PlusIcon />, onClick: () => console.log('New order'), variant: 'primary' as const },
-    { id: 'broadcast', label: 'Broadcast', icon: <BroadcastIcon />, onClick: () => console.log('Broadcast'), variant: 'success' as const },
-    { id: 'report', label: 'Laporan', icon: <DocumentIcon />, onClick: () => console.log('Report'), variant: 'secondary' as const },
-    { id: 'analytics', label: 'Analitik', icon: <ChartIcon />, onClick: () => console.log('Analytics'), variant: 'secondary' as const },
+    { id: 'new-order', label: 'Order Baru', icon: <PlusIcon />, onClick: () => window.location.href = '/orders', variant: 'primary' as const },
+    { id: 'broadcast', label: 'Broadcast', icon: <BroadcastIcon />, onClick: () => alert('Fitur broadcast segera hadir'), variant: 'success' as const },
+    { id: 'report', label: 'Laporan', icon: <DocumentIcon />, onClick: () => alert('Fitur laporan segera hadir'), variant: 'secondary' as const },
+    { id: 'analytics', label: 'Analitik', icon: <ChartIcon />, onClick: () => alert('Fitur analitik segera hadir'), variant: 'secondary' as const },
   ]
 
   const handleChatClick = (chatId: string) => {
-    console.log('Open chat:', chatId)
+    window.location.href = `/chats/${chatId}`
   }
 
   return (
@@ -96,37 +125,34 @@ export default function Dashboard() {
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-1">Selamat datang kembali! Ini ringkasan toko kamu hari ini.</p>
+          <p className="text-sm text-gray-500 mt-1">Data realtime dari database - WhatsApp SLA Ayam Petelur</p>
         </div>
 
-        {/* Stats Grid - 2x2 mobile, 4 cols desktop */}
+        {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-4 mb-6 lg:grid-cols-4">
           <StatCard
-            title="Total Pesanan"
-            value={demoStats.totalOrders}
+            title="Pesanan Hari Ini"
+            value={stats?.orders?.today || 0}
             icon={<ShoppingBagIcon />}
-            trend={demoStats.ordersTrend}
             color="blue"
           />
           <StatCard
             title="Chat Aktif"
-            value={demoStats.activeChats}
+            value={stats?.active_chats || 0}
             icon={<ChatBubbleIcon />}
-            trend={demoStats.chatsTrend}
             color="green"
           />
           <StatCard
             title="Total Produk"
-            value={demoStats.totalProducts}
+            value={stats?.total_products || 0}
             icon={<CubeIcon />}
             color="yellow"
           />
           <StatCard
-            title="Pendapatan Hari Ini"
-            value={new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(demoStats.todayRevenue)}
-            icon={<CurrencyIcon />}
-            trend={demoStats.revenueTrend}
-            color="green"
+            title="Stok Menipis"
+            value={stats?.low_stock_products || 0}
+            icon={<WarningIcon />}
+            color="red"
           />
         </div>
 
@@ -135,16 +161,32 @@ export default function Dashboard() {
           <QuickActions actions={quickActions} />
         </div>
 
-        {/* Main Content Grid - Stack mobile, 2 cols desktop */}
+        {/* Main Content Grid */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          {/* Recent Orders - Takes 2 cols on desktop */}
+          {/* Recent Orders */}
           <div className="lg:col-span-2">
-            <RecentOrdersTable orders={demoOrders} />
+            {orders.length > 0 ? (
+              <RecentOrdersTable orders={orders} />
+            ) : (
+              <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
+                <ShoppingBagIcon />
+                <h3 className="mt-4 text-lg font-medium text-gray-900">Belum Ada Pesanan</h3>
+                <p className="mt-2 text-sm text-gray-500">Pesanan dari WhatsApp akan muncul di sini.</p>
+              </div>
+            )}
           </div>
 
-          {/* Active Chats - Takes 1 col on desktop */}
+          {/* Active Chats */}
           <div>
-            <ActiveChatsList chats={demoChats} onChatClick={handleChatClick} />
+            {chats.length > 0 ? (
+              <ActiveChatsList chats={chats} onChatClick={handleChatClick} />
+            ) : (
+              <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
+                <ChatBubbleIcon />
+                <h3 className="mt-4 text-lg font-medium text-gray-900">Belum Ada Chat</h3>
+                <p className="mt-2 text-sm text-gray-500">Chat dari WhatsApp akan muncul di sini.</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

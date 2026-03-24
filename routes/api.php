@@ -68,4 +68,6 @@ Route::middleware(['api.token', 'throttle:api'])->group(function () {
 
     // Catalogs
     Route::get('/catalogs', [CatalogController::class, 'index']);
+    Route::get('/catalogs/{id}', [CatalogController::class, 'show']);
+    Route::post('/catalogs', [CatalogController::class, 'store']);
 });

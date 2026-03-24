@@ -15,30 +15,29 @@ class ChatResource extends JsonResource
         return [
             'id' => $this->id,
             'status' => $this->status,
-            'handled_by' => $this->handled_by,
+            'handledBy' => $this->handled_by,
             'customer' => [
-                'id' => $this->customer?->id,
-                'name' => $this->customer?->name,
-                'phone' => $this->customer?->phone,
-                'avatar' => $this->customer?->avatar_url,
+                'id' => $this->id, // No separate customer ID, using chat ID as proxy
+                'name' => $this->customer_name ?? 'Customer',
+                'phone' => $this->customer_phone,
+                'avatar' => null,
             ],
-            'assigned_admin' => $this->when($this->assignedAdmin, [
-                'id' => $this->assignedAdmin?->id,
-                'name' => $this->assignedAdmin?->name,
+            'assignedAdmin' => $this->when($this->handler, fn() => [
+                'id' => $this->handler->id,
+                'name' => $this->handler->name,
             ]),
-            'last_message' => $this->when($this->lastMessage, fn() => [
-                'content' => $this->lastMessage->content,
-                'sender_type' => $this->lastMessage->sender_type,
-                'created_at' => $this->lastMessage->created_at->toISOString(),
+            'lastMessage' => $this->when($this->latestMessage, fn() => [
+                'content' => $this->latestMessage->content,
+                'type' => $this->latestMessage->type,
+                'direction' => $this->latestMessage->direction === 'in' ? 'inbound' : 'outbound',
+                'createdAt' => $this->latestMessage->created_at->toISOString(),
             ]),
             'messages' => MessageResource::collection($this->whenLoaded('messages')),
-            'messages_count' => $this->when(isset($this->messages_count), $this->messages_count),
-            'unread_count' => $this->unread_count ?? 0,
-            'last_message_at' => $this->last_message_at?->toISOString(),
-            'takeover_at' => $this->takeover_at?->toISOString(),
-            'resolved_at' => $this->resolved_at?->toISOString(),
-            'created_at' => $this->created_at->toISOString(),
-            'updated_at' => $this->updated_at->toISOString(),
+            'messagesCount' => $this->when(isset($this->messages_count), $this->messages_count),
+            'unreadCount' => $this->unread_count ?? 0,
+            'lastMessageAt' => $this->last_message_at?->toISOString(),
+            'createdAt' => $this->created_at->toISOString(),
+            'updatedAt' => $this->updated_at->toISOString(),
         ];
     }
 }

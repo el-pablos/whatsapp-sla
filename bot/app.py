@@ -26,6 +26,7 @@ def create_app(config_name=None):
         WA_ACCESS_TOKEN=os.getenv("WA_ACCESS_TOKEN", ""),
         WA_PHONE_NUMBER_ID=os.getenv("WA_PHONE_NUMBER_ID", ""),
         WA_API_URL=os.getenv("WA_API_URL", "https://graph.facebook.com/v18.0"),
+        WA_APP_SECRET=os.getenv("WA_APP_SECRET", ""),
     )
 
     # Setup logging

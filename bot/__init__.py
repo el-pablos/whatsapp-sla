@@ -1,7 +1,5 @@
 """
-WhatsApp Bot Module
+WhatsApp SLA Bot Package
 """
-from .wa_client import WhatsAppClient
-from .config import Config
 
-__all__ = ["WhatsAppClient", "Config"]
+__version__ = "1.0.0"

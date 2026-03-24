@@ -19,33 +19,20 @@ class ChatController extends Controller
      */
     public function index(Request $request): AnonymousResourceCollection
     {
-        $query = Chat::with(['customer', 'lastMessage'])
+        $query = Chat::with(['latestMessage'])
             ->withCount('messages');
 
         // Filter by status
-        if ($request->has('status')) {
+        if ($request->has('status') && $request->status !== 'all') {
             $query->where('status', $request->status);
-        }
-
-        // Filter by handler type (bot/admin)
-        if ($request->has('handled_by')) {
-            $query->where('handled_by', $request->handled_by);
-        }
-
-        // Filter by date range
-        if ($request->has('from')) {
-            $query->whereDate('created_at', '>=', $request->from);
-        }
-        if ($request->has('to')) {
-            $query->whereDate('created_at', '<=', $request->to);
         }
 
         // Search by customer name/phone
         if ($request->has('search')) {
             $search = $request->search;
-            $query->whereHas('customer', function ($q) use ($search) {
-                $q->where('name', 'LIKE', "%{$search}%")
-                    ->orWhere('phone', 'LIKE', "%{$search}%");
+            $query->where(function($q) use ($search) {
+                $q->where('customer_name', 'LIKE', "%{$search}%")
+                  ->orWhere('customer_phone', 'LIKE', "%{$search}%");
             });
         }
 
@@ -61,10 +48,8 @@ class ChatController extends Controller
     public function show(int $id): ChatResource
     {
         $chat = Chat::with([
-            'customer',
             'messages' => fn($q) => $q->orderBy('created_at'),
-            'messages.attachments',
-            'assignedAdmin',
+            'handler',
         ])->findOrFail($id);
 
         return new ChatResource($chat);
@@ -77,17 +62,16 @@ class ChatController extends Controller
     {
         $chat = Chat::findOrFail($id);
 
-        if ($chat->handled_by === 'admin' && $chat->assigned_admin_id !== null) {
+        if ($chat->status === Chat::STATUS_ADMIN && $chat->handled_by !== null) {
             return response()->json([
                 'message' => 'Chat sudah dihandle oleh admin lain.',
-                'assigned_to' => $chat->assignedAdmin?->name,
+                'assigned_to' => $chat->handler?->name,
             ], 422);
         }
 
         $chat->update([
-            'handled_by' => 'admin',
-            'assigned_admin_id' => $request->user()->id,
-            'takeover_at' => now(),
+            'status' => Chat::STATUS_ADMIN,
+            'handled_by' => $request->user()->id,
         ]);
 
         // Notify via Redis pub/sub
@@ -99,7 +83,7 @@ class ChatController extends Controller
 
         return response()->json([
             'message' => 'Berhasil mengambil alih chat.',
-            'chat' => new ChatResource($chat->fresh(['customer', 'assignedAdmin'])),
+            'chat' => new ChatResource($chat->fresh(['handler'])),
         ]);
     }
 
@@ -111,7 +95,7 @@ class ChatController extends Controller
         $chat = Chat::findOrFail($id);
 
         // Pastikan admin yang assigned yang bisa kirim message
-        if ($chat->handled_by === 'admin' && $chat->assigned_admin_id !== $request->user()->id) {
+        if ($chat->status === Chat::STATUS_ADMIN && $chat->handled_by !== $request->user()->id) {
             return response()->json([
                 'message' => 'Anda tidak memiliki akses untuk mengirim pesan di chat ini.',
             ], 403);
@@ -119,24 +103,10 @@ class ChatController extends Controller
 
         // Buat message
         $message = $chat->messages()->create([
-            'sender_type' => 'admin',
-            'sender_id' => $request->user()->id,
             'content' => $request->content,
-            'message_type' => $request->input('message_type', 'text'),
+            'type' => $request->input('message_type', 'text'),
+            'direction' => Message::DIRECTION_OUT,
         ]);
-
-        // Handle attachments jika ada
-        if ($request->hasFile('attachments')) {
-            foreach ($request->file('attachments') as $file) {
-                $path = $file->store('chat-attachments', 'public');
-                $message->attachments()->create([
-                    'file_path' => $path,
-                    'file_name' => $file->getClientOriginalName(),
-                    'file_type' => $file->getMimeType(),
-                    'file_size' => $file->getSize(),
-                ]);
-            }
-        }
 
         // Update last message timestamp
         $chat->update(['last_message_at' => now()]);
@@ -144,7 +114,7 @@ class ChatController extends Controller
         // Publish ke Redis untuk real-time update
         $this->publishChatEvent('chat.message', [
             'chat_id' => $chat->id,
-            'message' => new MessageResource($message->load('attachments')),
+            'message' => new MessageResource($message),
         ]);
 
         // Trigger kirim ke WhatsApp via bot service
@@ -152,7 +122,7 @@ class ChatController extends Controller
 
         return response()->json([
             'message' => 'Pesan berhasil dikirim.',
-            'data' => new MessageResource($message->load('attachments')),
+            'data' => new MessageResource($message),
         ], 201);
     }
 

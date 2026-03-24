@@ -43,7 +43,11 @@ Route::middleware(['api.token', 'throttle:api'])->group(function () {
     // Products
     Route::prefix('products')->group(function () {
         Route::get('/', [ProductController::class, 'index']);
+        Route::post('/', [ProductController::class, 'store']);
         Route::get('/{id}', [ProductController::class, 'show']);
+        Route::put('/{id}', [ProductController::class, 'update']);
+        Route::delete('/{id}', [ProductController::class, 'destroy']);
+        Route::patch('/{id}/stock', [ProductController::class, 'updateStock']);
         Route::get('/type/{type}', [ProductController::class, 'byType']);
     });
 
@@ -51,7 +55,10 @@ Route::middleware(['api.token', 'throttle:api'])->group(function () {
     Route::get('/stock/{product_id}', [StockController::class, 'show']);
 
     // Orders
+    Route::get('/orders', [OrderController::class, 'index']);
+    Route::get('/orders/{id}', [OrderController::class, 'show']);
     Route::post('/orders', [OrderController::class, 'store']);
+    Route::patch('/orders/{id}/status', [OrderController::class, 'updateStatus']);
 
     // Chats
     Route::post('/chats', [ChatController::class, 'store']);

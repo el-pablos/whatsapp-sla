@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WebhookController;
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\StockController;
 use App\Http\Controllers\Api\OrderController;
@@ -37,6 +38,16 @@ Route::get('/health', function () {
     ]);
 });
 
+// Auth routes - Sanctum token-based authentication
+Route::prefix('auth')->group(function () {
+    Route::post('/login', [AuthController::class, 'login']);
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/logout', [AuthController::class, 'logout']);
+        Route::get('/me', [AuthController::class, 'me']);
+    });
+});
+
 // Protected routes - requires API token
 Route::middleware(['api.token', 'throttle:api'])->group(function () {
 
@@ -61,6 +72,9 @@ Route::middleware(['api.token', 'throttle:api'])->group(function () {
     Route::patch('/orders/{id}/status', [OrderController::class, 'updateStatus']);
 
     // Chats
+    Route::get('/chats', [ChatController::class, 'index']);
+    Route::get('/chats/{id}', [ChatController::class, 'show']);
+    Route::patch('/chats/{id}', [ChatController::class, 'update']);
     Route::post('/chats', [ChatController::class, 'store']);
 
     // Messages

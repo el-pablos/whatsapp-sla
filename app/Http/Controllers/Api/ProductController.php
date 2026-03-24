@@ -14,7 +14,7 @@ class ProductController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $products = Product::where('is_active', true)
+        $products = Product::where('status', 'active')
             ->orderBy('name')
             ->get();
 

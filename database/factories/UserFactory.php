@@ -21,7 +21,7 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'phone' => fake()->phoneNumber(),
-            'role' => User::ROLE_STAFF,
+            'role' => 'operator',
             'remember_token' => Str::random(10),
         ];
     }
@@ -44,6 +44,20 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'role' => User::ROLE_STAFF,
+        ]);
+    }
+
+    public function operator(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'operator',
+        ]);
+    }
+
+    public function viewer(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'viewer',
         ]);
     }
 }

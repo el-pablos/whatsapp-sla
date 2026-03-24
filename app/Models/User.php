@@ -12,8 +12,11 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    // fix: sesuaikan constants dengan enum di migration users - 2026-03-24
     public const ROLE_ADMIN = 'admin';
-    public const ROLE_STAFF = 'staff';
+    public const ROLE_OPERATOR = 'operator';
+    public const ROLE_STAFF = 'staff'; // alias untuk backward compatibility
+    public const ROLE_VIEWER = 'viewer';
 
     protected $fillable = [
         'name',
@@ -53,9 +56,20 @@ class User extends Authenticatable
         return $this->role === self::ROLE_ADMIN;
     }
 
+    // fix: rename isStaff ke isOperator sesuai enum - 2026-03-24
+    public function isOperator(): bool
+    {
+        return $this->role === self::ROLE_OPERATOR;
+    }
+
     public function isStaff(): bool
     {
-        return $this->role === self::ROLE_STAFF;
+        return $this->role === self::ROLE_STAFF || $this->role === self::ROLE_OPERATOR;
+    }
+
+    public function isViewer(): bool
+    {
+        return $this->role === self::ROLE_VIEWER;
     }
 
     public function isCustomer(): bool

@@ -16,14 +16,16 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->string('password');
-            $table->enum('role', ['admin', 'operator', 'viewer'])->default('operator');
+            $table->enum('role', ['admin', 'operator', 'staff', 'viewer', 'customer'])->default('operator');
             $table->string('phone', 20)->nullable();
+            $table->boolean('is_active')->default(true);
             $table->timestamp('email_verified_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
 
             $table->index('role');
             $table->index('phone');
+            $table->index('is_active');
         });
     }
 

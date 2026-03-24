@@ -15,11 +15,13 @@ return new class extends Migration
             $table->id();
             $table->string('customer_phone', 20)->unique();
             $table->string('customer_name')->nullable();
-            $table->enum('status', ['bot', 'admin'])->default('bot');
+            $table->enum('status', ['bot', 'admin', 'resolved'])->default('bot');
+            $table->foreignId('handled_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('last_message_at')->nullable();
             $table->timestamps();
 
             $table->index('status');
+            $table->index('handled_by');
             $table->index('last_message_at');
         });
     }

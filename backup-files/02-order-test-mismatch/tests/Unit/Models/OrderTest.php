@@ -45,19 +45,49 @@ describe('Order Model', function () {
             $order = new Order();
             $fillable = $order->getFillable();
 
-            expect($fillable)->toContain('customer_phone')
+            expect($fillable)->toContain('order_number')
+                ->toContain('customer_phone')
                 ->toContain('customer_name')
+                ->toContain('items')
+                ->toContain('subtotal')
+                ->toContain('discount')
                 ->toContain('total')
                 ->toContain('status')
-                ->toContain('notes');
+                ->toContain('notes')
+                ->toContain('source')
+                ->toContain('metadata');
         });
     });
 
     describe('casts', function () {
+        it('casts items to array', function () {
+            $order = new Order();
+            $casts = $order->getCasts();
+            expect($casts['items'])->toBe('array');
+        });
+
+        it('casts metadata to array', function () {
+            $order = new Order();
+            $casts = $order->getCasts();
+            expect($casts['metadata'])->toBe('array');
+        });
+
+        it('casts subtotal to decimal', function () {
+            $order = new Order();
+            $casts = $order->getCasts();
+            expect($casts['subtotal'])->toBe('decimal:2');
+        });
+
         it('casts total to decimal', function () {
             $order = new Order();
             $casts = $order->getCasts();
             expect($casts['total'])->toBe('decimal:2');
+        });
+
+        it('casts discount to decimal', function () {
+            $order = new Order();
+            $casts = $order->getCasts();
+            expect($casts['discount'])->toBe('decimal:2');
         });
     });
 
@@ -121,6 +151,28 @@ describe('Order Model', function () {
         });
     });
 
+    describe('soft deletes', function () {
+        it('supports soft deletes', function () {
+            $order = Order::factory()->create();
+            $orderId = $order->id;
+
+            $order->delete();
+
+            expect(Order::find($orderId))->toBeNull();
+            expect(Order::withTrashed()->find($orderId))->not->toBeNull();
+        });
+
+        it('can restore soft deleted order', function () {
+            $order = Order::factory()->create();
+            $orderId = $order->id;
+
+            $order->delete();
+            Order::withTrashed()->find($orderId)->restore();
+
+            expect(Order::find($orderId))->not->toBeNull();
+        });
+    });
+
     describe('factory', function () {
         it('creates a valid order', function () {
             $order = Order::factory()->create();
@@ -128,6 +180,26 @@ describe('Order Model', function () {
             expect($order->id)->not->toBeNull();
             expect($order->customer_phone)->not->toBeEmpty();
             expect($order->status)->toBeIn(Order::statuses());
+        });
+
+        it('creates order with items as array', function () {
+            $order = Order::factory()->create([
+                'items' => [
+                    ['product_id' => 1, 'qty' => 2, 'price' => 25000]
+                ]
+            ]);
+
+            expect($order->items)->toBeArray()
+                ->toHaveCount(1);
+        });
+
+        it('creates order with metadata as array', function () {
+            $order = Order::factory()->create([
+                'metadata' => ['source' => 'whatsapp', 'chat_id' => '123']
+            ]);
+
+            expect($order->metadata)->toBeArray()
+                ->toHaveKey('source');
         });
     });
 });

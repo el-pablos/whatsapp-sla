@@ -80,10 +80,10 @@ class OrderController extends Controller
                     $subtotal = $item['quantity'] * $item['price'];
                     $total += $subtotal;
 
+                    // fix: gunakan qty sesuai fillable di OrderItem model - 2026-03-24
                     $orderItems[] = [
-                        'product_name' => $item['name'],
                         'product_id' => $item['product_id'] ?? null,
-                        'quantity' => $item['quantity'],
+                        'qty' => $item['quantity'],
                         'price' => $item['price'],
                         'subtotal' => $subtotal,
                     ];

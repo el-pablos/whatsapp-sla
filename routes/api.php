@@ -70,6 +70,8 @@ Route::middleware(['api.token', 'throttle:api'])->group(function () {
     Route::get('/orders/{id}', [OrderController::class, 'show']);
     Route::post('/orders', [OrderController::class, 'store']);
     Route::patch('/orders/{id}/status', [OrderController::class, 'updateStatus']);
+    // fix: tambahkan route delete untuk cancel order - 2026-03-24
+    Route::delete('/orders/{id}', [OrderController::class, 'destroy']);
 
     // Chats
     Route::get('/chats', [ChatController::class, 'index']);

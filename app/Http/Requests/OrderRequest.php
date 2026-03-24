@@ -22,6 +22,8 @@ class OrderRequest extends FormRequest
             'items.*.quantity' => ['required', 'integer', 'min:1'],
             'items.*.price' => ['required', 'numeric', 'min:0'],
             'notes' => ['nullable', 'string', 'max:1000'],
+            // fix: tambahkan discount field untuk mendukung diskon order - 2026-03-24
+            'discount' => ['nullable', 'numeric', 'min:0'],
         ];
 
         if ($this->isMethod('PUT') || $this->isMethod('PATCH')) {

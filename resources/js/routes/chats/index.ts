@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\ChatController::index
- * @see app/Http/Controllers/ChatController.php:20
+ * @see app/Http/Controllers/ChatController.php:22
  * @route '/chats'
  */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\ChatController::index
- * @see app/Http/Controllers/ChatController.php:20
+ * @see app/Http/Controllers/ChatController.php:22
  * @route '/chats'
  */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\ChatController::index
- * @see app/Http/Controllers/ChatController.php:20
+ * @see app/Http/Controllers/ChatController.php:22
  * @route '/chats'
  */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,7 +34,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\ChatController::index
- * @see app/Http/Controllers/ChatController.php:20
+ * @see app/Http/Controllers/ChatController.php:22
  * @route '/chats'
  */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,7 +44,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\ChatController::index
- * @see app/Http/Controllers/ChatController.php:20
+ * @see app/Http/Controllers/ChatController.php:22
  * @route '/chats'
  */
     const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -54,7 +54,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\ChatController::index
- * @see app/Http/Controllers/ChatController.php:20
+ * @see app/Http/Controllers/ChatController.php:22
  * @route '/chats'
  */
         indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -63,7 +63,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\ChatController::index
- * @see app/Http/Controllers/ChatController.php:20
+ * @see app/Http/Controllers/ChatController.php:22
  * @route '/chats'
  */
         indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -597,7 +597,7 @@ destroy.delete = (args: { chat: string | number } | [chat: string | number ] | s
     destroy.form = destroyForm
 /**
 * @see \App\Http\Controllers\ChatController::takeover
- * @see app/Http/Controllers/ChatController.php:76
+ * @see app/Http/Controllers/ChatController.php:81
  * @route '/chats/{chat}/takeover'
  */
 export const takeover = (args: { chat: string | number } | [chat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -612,7 +612,7 @@ takeover.definition = {
 
 /**
 * @see \App\Http\Controllers\ChatController::takeover
- * @see app/Http/Controllers/ChatController.php:76
+ * @see app/Http/Controllers/ChatController.php:81
  * @route '/chats/{chat}/takeover'
  */
 takeover.url = (args: { chat: string | number } | [chat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -640,7 +640,7 @@ takeover.url = (args: { chat: string | number } | [chat: string | number ] | str
 
 /**
 * @see \App\Http\Controllers\ChatController::takeover
- * @see app/Http/Controllers/ChatController.php:76
+ * @see app/Http/Controllers/ChatController.php:81
  * @route '/chats/{chat}/takeover'
  */
 takeover.post = (args: { chat: string | number } | [chat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -650,7 +650,7 @@ takeover.post = (args: { chat: string | number } | [chat: string | number ] | st
 
     /**
 * @see \App\Http\Controllers\ChatController::takeover
- * @see app/Http/Controllers/ChatController.php:76
+ * @see app/Http/Controllers/ChatController.php:81
  * @route '/chats/{chat}/takeover'
  */
     const takeoverForm = (args: { chat: string | number } | [chat: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -660,7 +660,7 @@ takeover.post = (args: { chat: string | number } | [chat: string | number ] | st
 
             /**
 * @see \App\Http\Controllers\ChatController::takeover
- * @see app/Http/Controllers/ChatController.php:76
+ * @see app/Http/Controllers/ChatController.php:81
  * @route '/chats/{chat}/takeover'
  */
         takeoverForm.post = (args: { chat: string | number } | [chat: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -671,7 +671,7 @@ takeover.post = (args: { chat: string | number } | [chat: string | number ] | st
     takeover.form = takeoverForm
 /**
 * @see \App\Http\Controllers\ChatController::resolve
- * @see app/Http/Controllers/ChatController.php:162
+ * @see app/Http/Controllers/ChatController.php:152
  * @route '/chats/{chat}/resolve'
  */
 export const resolve = (args: { chat: string | number } | [chat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -686,7 +686,7 @@ resolve.definition = {
 
 /**
 * @see \App\Http\Controllers\ChatController::resolve
- * @see app/Http/Controllers/ChatController.php:162
+ * @see app/Http/Controllers/ChatController.php:152
  * @route '/chats/{chat}/resolve'
  */
 resolve.url = (args: { chat: string | number } | [chat: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -714,7 +714,7 @@ resolve.url = (args: { chat: string | number } | [chat: string | number ] | stri
 
 /**
 * @see \App\Http\Controllers\ChatController::resolve
- * @see app/Http/Controllers/ChatController.php:162
+ * @see app/Http/Controllers/ChatController.php:152
  * @route '/chats/{chat}/resolve'
  */
 resolve.post = (args: { chat: string | number } | [chat: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -724,7 +724,7 @@ resolve.post = (args: { chat: string | number } | [chat: string | number ] | str
 
     /**
 * @see \App\Http\Controllers\ChatController::resolve
- * @see app/Http/Controllers/ChatController.php:162
+ * @see app/Http/Controllers/ChatController.php:152
  * @route '/chats/{chat}/resolve'
  */
     const resolveForm = (args: { chat: string | number } | [chat: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -734,7 +734,7 @@ resolve.post = (args: { chat: string | number } | [chat: string | number ] | str
 
             /**
 * @see \App\Http\Controllers\ChatController::resolve
- * @see app/Http/Controllers/ChatController.php:162
+ * @see app/Http/Controllers/ChatController.php:152
  * @route '/chats/{chat}/resolve'
  */
         resolveForm.post = (args: { chat: string | number } | [chat: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

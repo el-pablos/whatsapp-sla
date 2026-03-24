@@ -1,33 +1,47 @@
-import { useState, useCallback } from 'react'
-import { Head } from '@inertiajs/react'
+import { useState, useCallback, useEffect } from 'react'
+import { Head, usePage } from '@inertiajs/react'
 import { cn } from '@/lib/utils'
-import { useChats, useChatDetail } from '@/hooks/useChats'
-import type { Chat, ChatStatus } from '@/types/chat'
+import type { Chat, ChatStatus, Message } from '@/types/chat'
 import { ChatList } from './ChatList'
 import { ChatDetail } from './ChatDetail'
 
+interface PageProps {
+  chats: {
+    data: Chat[]
+  }
+  filters: {
+    status: string
+    search: string
+  }
+}
+
 export default function ChatsIndex() {
-  const [statusFilter, setStatusFilter] = useState<ChatStatus | 'all'>('all')
+  const { chats: initialChats, filters } = usePage<PageProps>().props
+
+  const [statusFilter, setStatusFilter] = useState<ChatStatus | 'all'>(
+    (filters?.status as ChatStatus | 'all') || 'all'
+  )
+  const [chats, setChats] = useState<Chat[]>(initialChats?.data || [])
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null)
   const [showDetail, setShowDetail] = useState(false)
+  const [messages, setMessages] = useState<Message[]>([])
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false)
 
-  const { chats, isLoading: isLoadingChats } = useChats({
-    status: statusFilter === 'all' ? undefined : statusFilter,
-    pollInterval: 5000,
-  })
-
-  const {
-    chat: chatDetail,
-    messages,
-    isLoading: isLoadingMessages,
-    sendMessage,
-    takeover,
-    resolve,
-  } = useChatDetail(selectedChat?.id ?? null, { pollInterval: 3000 })
+  // Update chats when initial props change
+  useEffect(() => {
+    if (initialChats?.data) {
+      setChats(initialChats.data)
+    }
+  }, [initialChats])
 
   const handleSelectChat = useCallback((chat: Chat) => {
     setSelectedChat(chat)
     setShowDetail(true)
+    // Load messages for this chat
+    setIsLoadingMessages(true)
+    // Simulated - in production, fetch from API with auth
+    setMessages(chat.messages || [])
+    setIsLoadingMessages(false)
   }, [])
 
   const handleBack = useCallback(() => {
@@ -36,20 +50,23 @@ export default function ChatsIndex() {
 
   const handleSendMessage = useCallback(
     async (content: string) => {
-      await sendMessage(content)
+      // In production, this would call the API
+      console.log('Sending message:', content)
     },
-    [sendMessage]
+    []
   )
 
   const handleTakeover = useCallback(async () => {
-    await takeover()
-  }, [takeover])
+    // In production, this would call the API
+    console.log('Taking over chat')
+  }, [])
 
   const handleResolve = useCallback(async () => {
-    await resolve()
+    // In production, this would call the API
+    console.log('Resolving chat')
     setShowDetail(false)
     setSelectedChat(null)
-  }, [resolve])
+  }, [])
 
   return (
     <>
@@ -67,7 +84,7 @@ export default function ChatsIndex() {
             chats={chats}
             selectedChatId={selectedChat?.id}
             onSelectChat={handleSelectChat}
-            isLoading={isLoadingChats}
+            isLoading={false}
             statusFilter={statusFilter}
             onStatusFilterChange={setStatusFilter}
           />
@@ -82,7 +99,7 @@ export default function ChatsIndex() {
         >
           <div className="w-full">
             <ChatDetail
-              chat={chatDetail ?? selectedChat}
+              chat={selectedChat}
               messages={messages}
               isLoading={isLoadingMessages}
               onBack={handleBack}

@@ -8,8 +8,9 @@ interface CatalogCardProps {
 }
 
 export default function CatalogCard({ catalog, onEdit, onDelete, onPreview }: CatalogCardProps) {
-  const totalProducts = catalog.products.length
-  const totalValue = catalog.products.reduce((sum, p) => sum + p.price, 0)
+  const products = catalog.products || []
+  const totalProducts = catalog.products_count ?? products.length
+  const totalValue = products.reduce((sum, p) => sum + (p.price || 0), 0)
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -20,6 +21,7 @@ export default function CatalogCard({ catalog, onEdit, onDelete, onPreview }: Ca
   }
 
   const formatDate = (dateString: string) => {
+    if (!dateString) return '-'
     return new Date(dateString).toLocaleDateString('id-ID', {
       day: 'numeric',
       month: 'short',
@@ -49,23 +51,30 @@ export default function CatalogCard({ catalog, onEdit, onDelete, onPreview }: Ca
         <div className="absolute top-2 right-2 bg-black/70 text-white text-xs font-medium px-2 py-1 rounded-full">
           {totalProducts} produk
         </div>
+
+        {/* Status badge */}
+        <div className={`absolute top-2 left-2 text-xs font-medium px-2 py-1 rounded-full ${
+          catalog.status === 'active' ? 'bg-green-500 text-white' : 'bg-gray-400 text-white'
+        }`}>
+          {catalog.status === 'active' ? 'Aktif' : 'Nonaktif'}
+        </div>
       </div>
 
       {/* Content */}
       <div className="p-4">
         <h3 className="font-semibold text-gray-900 mb-1 line-clamp-1">{catalog.name}</h3>
-        <p className="text-sm text-gray-500 line-clamp-2 mb-3">{catalog.description}</p>
+        <p className="text-sm text-gray-500 line-clamp-2 mb-3">{catalog.description || '-'}</p>
 
         {/* Stats */}
         <div className="flex items-center gap-4 text-xs text-gray-500 mb-4">
-          <span>{formatCurrency(totalValue)}</span>
-          <span>Update: {formatDate(catalog.updatedAt)}</span>
+          {totalValue > 0 && <span>{formatCurrency(totalValue)}</span>}
+          <span>Update: {formatDate(catalog.updatedAt || catalog.updated_at)}</span>
         </div>
 
         {/* Product preview chips */}
-        {catalog.products.length > 0 && (
+        {products.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-4">
-            {catalog.products.slice(0, 3).map(product => (
+            {products.slice(0, 3).map(product => (
               <span
                 key={product.id}
                 className="inline-block bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full"
@@ -73,9 +82,9 @@ export default function CatalogCard({ catalog, onEdit, onDelete, onPreview }: Ca
                 {product.name}
               </span>
             ))}
-            {catalog.products.length > 3 && (
+            {products.length > 3 && (
               <span className="inline-block bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full">
-                +{catalog.products.length - 3} lagi
+                +{products.length - 3} lagi
               </span>
             )}
           </div>

@@ -11,15 +11,17 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Redis;
+use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
 
 class ChatController extends Controller
 {
     /**
      * List chats dengan filter status
      */
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(Request $request): InertiaResponse|AnonymousResourceCollection
     {
-        $query = Chat::with(['latestMessage'])
+        $query = Chat::with(['latestMessage', 'handler'])
             ->withCount('messages');
 
         // Filter by status
@@ -39,20 +41,38 @@ class ChatController extends Controller
         $chats = $query->orderByDesc('last_message_at')
             ->paginate($request->input('per_page', 20));
 
-        return ChatResource::collection($chats);
+        // Return Inertia view for web requests, JSON for API
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return ChatResource::collection($chats);
+        }
+
+        return Inertia::render('Chats/Index', [
+            'chats' => ChatResource::collection($chats),
+            'filters' => [
+                'status' => $request->status ?? 'all',
+                'search' => $request->search ?? '',
+            ],
+        ]);
     }
 
     /**
      * Chat detail dengan messages
      */
-    public function show(int $id): ChatResource
+    public function show(int $id, Request $request): InertiaResponse|ChatResource
     {
         $chat = Chat::with([
             'messages' => fn($q) => $q->orderBy('created_at'),
             'handler',
         ])->findOrFail($id);
 
-        return new ChatResource($chat);
+        // Return Inertia view for web requests, JSON for API
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return new ChatResource($chat);
+        }
+
+        return Inertia::render('Chats/Show', [
+            'chat' => new ChatResource($chat),
+        ]);
     }
 
     /**

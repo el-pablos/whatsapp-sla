@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react'
+import { usePage } from '@inertiajs/react'
 import CatalogCard from './CatalogCard'
 import CatalogForm from './CatalogForm'
 import PreviewModal from './PreviewModal'
@@ -19,19 +20,22 @@ export interface Catalog {
   description: string
   coverImage?: string
   products: Product[]
+  products_count?: number
   createdAt: string
   updatedAt: string
+  status: string
 }
 
-interface CatalogsPageProps {
-  initialCatalogs?: Catalog[]
-  availableProducts?: Product[]
+interface PageProps {
+  catalogs: {
+    data: Catalog[]
+  }
 }
 
-export default function CatalogsPage({
-  initialCatalogs = [],
-  availableProducts = []
-}: CatalogsPageProps) {
+export default function CatalogsPage() {
+  const { catalogs: paginatedCatalogs } = usePage<PageProps>().props
+  const initialCatalogs = paginatedCatalogs?.data || []
+
   const [catalogs, setCatalogs] = useState<Catalog[]>(initialCatalogs)
   const [showForm, setShowForm] = useState(false)
   const [editingCatalog, setEditingCatalog] = useState<Catalog | null>(null)
@@ -40,7 +44,7 @@ export default function CatalogsPage({
 
   const filteredCatalogs = catalogs.filter(catalog =>
     catalog.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    catalog.description.toLowerCase().includes(searchQuery.toLowerCase())
+    (catalog.description || '').toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   const handleCreate = useCallback(() => {

@@ -10,42 +10,107 @@ class PriceHistory extends Model
 {
     use HasFactory;
 
+    protected $table = 'price_histories';
+
     protected $fillable = [
         'product_id',
         'old_price',
         'new_price',
         'changed_by',
-        'reason',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'old_price' => 'decimal:2',
-            'new_price' => 'decimal:2',
-        ];
-    }
+    protected $casts = [
+        'old_price' => 'decimal:2',
+        'new_price' => 'decimal:2',
+    ];
 
+    /**
+     * Relasi ke product
+     */
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
-    public function changedBy(): BelongsTo
+    /**
+     * Relasi ke user yang mengubah harga
+     */
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'changed_by');
     }
 
-    public function getPriceChange(): float
+    /**
+     * Alias untuk user() - lebih deskriptif
+     */
+    public function changedBy(): BelongsTo
+    {
+        return $this->user();
+    }
+
+    /**
+     * Hitung persentase perubahan harga
+     */
+    public function getPriceChangePercentageAttribute(): float
+    {
+        if ($this->old_price == 0) {
+            return 100;
+        }
+
+        return round((($this->new_price - $this->old_price) / $this->old_price) * 100, 2);
+    }
+
+    /**
+     * Hitung selisih harga
+     */
+    public function getPriceDifferenceAttribute(): float
     {
         return $this->new_price - $this->old_price;
     }
 
-    public function getPriceChangePercentage(): float
+    /**
+     * Check apakah harga naik
+     */
+    public function isPriceIncrease(): bool
     {
-        if ($this->old_price == 0) {
-            return 0;
-        }
-        return (($this->new_price - $this->old_price) / $this->old_price) * 100;
+        return $this->new_price > $this->old_price;
+    }
+
+    /**
+     * Check apakah harga turun
+     */
+    public function isPriceDecrease(): bool
+    {
+        return $this->new_price < $this->old_price;
+    }
+
+    /**
+     * Format perubahan untuk display
+     */
+    public function getFormattedChangeAttribute(): string
+    {
+        $oldFormatted = number_format($this->old_price, 0, ',', '.');
+        $newFormatted = number_format($this->new_price, 0, ',', '.');
+        $percentage = $this->price_change_percentage;
+
+        $direction = $this->isPriceIncrease() ? '+' : '';
+
+        return "Rp {$oldFormatted} -> Rp {$newFormatted} ({$direction}{$percentage}%)";
+    }
+
+    /**
+     * Scope untuk filter berdasarkan product
+     */
+    public function scopeForProduct($query, int $productId)
+    {
+        return $query->where('product_id', $productId);
+    }
+
+    /**
+     * Scope untuk filter berdasarkan periode
+     */
+    public function scopeInPeriod($query, $startDate, $endDate)
+    {
+        return $query->whereBetween('created_at', [$startDate, $endDate]);
     }
 }

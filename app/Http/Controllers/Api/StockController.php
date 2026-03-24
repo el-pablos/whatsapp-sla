@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Stock;
+use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 
 class StockController extends Controller
@@ -13,13 +13,13 @@ class StockController extends Controller
      */
     public function show(int $product_id): JsonResponse
     {
-        $stock = Stock::where('product_id', $product_id)->first();
+        $product = Product::find($product_id);
 
-        if (!$stock) {
+        if (!$product) {
             return response()->json([
                 'success' => false,
-                'message' => 'Stock tidak ditemukan',
-                'code'    => 'STOCK_NOT_FOUND',
+                'message' => 'Product tidak ditemukan',
+                'code'    => 'PRODUCT_NOT_FOUND',
             ], 404);
         }
 
@@ -27,9 +27,10 @@ class StockController extends Controller
             'success' => true,
             'message' => 'Stock retrieved successfully',
             'data'    => [
-                'product_id' => $stock->product_id,
-                'quantity'   => $stock->quantity,
-                'updated_at' => $stock->updated_at,
+                'product_id' => $product->id,
+                'quantity'   => $product->stock,
+                'unit'       => $product->unit,
+                'updated_at' => $product->updated_at,
             ],
         ]);
     }

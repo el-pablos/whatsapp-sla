@@ -14,7 +14,7 @@ class CatalogController extends Controller
      */
     public function index(): JsonResponse
     {
-        $catalogs = Catalog::where('is_active', true)
+        $catalogs = Catalog::active()
             ->with('products')
             ->orderBy('name')
             ->get();

@@ -3,7 +3,11 @@
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Chat;
-use function Pest\Laravel\postJson;
+
+beforeEach(function () {
+    // Set API token untuk testing
+    config(['services.bot.api_token' => 'test-api-token']);
+});
 
 describe('OrderController API', function () {
 
@@ -26,7 +30,10 @@ describe('OrderController API', function () {
                 'notes' => 'Kirim siang ya',
             ];
 
-            $response = postJson('/api/orders', $orderData);
+            $response = $this->withHeaders([
+                'Authorization' => 'Bearer test-api-token',
+                'Accept' => 'application/json',
+            ])->postJson('/api/orders', $orderData);
 
             $response->assertStatus(201)
                 ->assertJson([
@@ -43,7 +50,10 @@ describe('OrderController API', function () {
         it('fails when chat_id is missing', function () {
             $product = Product::factory()->create();
 
-            $response = postJson('/api/orders', [
+            $response = $this->withHeaders([
+                'Authorization' => 'Bearer test-api-token',
+                'Accept' => 'application/json',
+            ])->postJson('/api/orders', [
                 'customer_phone' => '081234567890',
                 'items' => [
                     ['product_id' => $product->id, 'quantity' => 1, 'price' => 25000]
@@ -62,7 +72,10 @@ describe('OrderController API', function () {
         it('fails when items array is empty', function () {
             $chat = Chat::factory()->create();
 
-            $response = postJson('/api/orders', [
+            $response = $this->withHeaders([
+                'Authorization' => 'Bearer test-api-token',
+                'Accept' => 'application/json',
+            ])->postJson('/api/orders', [
                 'chat_id' => $chat->id,
                 'customer_phone' => '081234567890',
                 'items' => [],
@@ -76,7 +89,10 @@ describe('OrderController API', function () {
         it('fails when product_id does not exist', function () {
             $chat = Chat::factory()->create();
 
-            $response = postJson('/api/orders', [
+            $response = $this->withHeaders([
+                'Authorization' => 'Bearer test-api-token',
+                'Accept' => 'application/json',
+            ])->postJson('/api/orders', [
                 'chat_id' => $chat->id,
                 'customer_phone' => '081234567890',
                 'items' => [
@@ -93,7 +109,10 @@ describe('OrderController API', function () {
             $chat = Chat::factory()->create();
             $product = Product::factory()->create();
 
-            $response = postJson('/api/orders', [
+            $response = $this->withHeaders([
+                'Authorization' => 'Bearer test-api-token',
+                'Accept' => 'application/json',
+            ])->postJson('/api/orders', [
                 'chat_id' => $chat->id,
                 'customer_phone' => '081234567890',
                 'items' => [
@@ -110,7 +129,10 @@ describe('OrderController API', function () {
             $chat = Chat::factory()->create();
             $product = Product::factory()->create();
 
-            $response = postJson('/api/orders', [
+            $response = $this->withHeaders([
+                'Authorization' => 'Bearer test-api-token',
+                'Accept' => 'application/json',
+            ])->postJson('/api/orders', [
                 'chat_id' => $chat->id,
                 'customer_phone' => '081234567890',
                 'items' => [
@@ -127,7 +149,10 @@ describe('OrderController API', function () {
             $chat = Chat::factory()->create();
             $product = Product::factory()->create();
 
-            $response = postJson('/api/orders', [
+            $response = $this->withHeaders([
+                'Authorization' => 'Bearer test-api-token',
+                'Accept' => 'application/json',
+            ])->postJson('/api/orders', [
                 'chat_id' => $chat->id,
                 'customer_phone' => '081234567890',
                 'items' => [
@@ -145,7 +170,10 @@ describe('OrderController API', function () {
             $product1 = Product::factory()->create(['price' => 20000]);
             $product2 = Product::factory()->create(['price' => 35000]);
 
-            $response = postJson('/api/orders', [
+            $response = $this->withHeaders([
+                'Authorization' => 'Bearer test-api-token',
+                'Accept' => 'application/json',
+            ])->postJson('/api/orders', [
                 'chat_id' => $chat->id,
                 'customer_phone' => '081234567890',
                 'items' => [
@@ -158,6 +186,16 @@ describe('OrderController API', function () {
             $response->assertStatus(201);
             $orderItems = $response->json('data.items');
             expect($orderItems)->toHaveCount(2);
+        });
+
+        it('returns 401 without token', function () {
+            $response = $this->postJson('/api/orders', []);
+
+            $response->assertStatus(401)
+                ->assertJson([
+                    'success' => false,
+                    'code' => 'MISSING_TOKEN',
+                ]);
         });
     });
 });

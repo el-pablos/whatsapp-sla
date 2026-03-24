@@ -10,14 +10,19 @@ abstract class TestCase extends BaseTestCase
     use RefreshDatabase;
 
     /**
+     * Test API Token untuk authentication.
+     */
+    protected string $testApiToken = 'test-api-token-for-testing';
+
+    /**
      * Setup yang dijalankan sebelum setiap test.
      */
     protected function setUp(): void
     {
         parent::setUp();
 
-        // Disable exception handling untuk debugging yang lebih mudah
-        // $this->withoutExceptionHandling();
+        // Set API token untuk testing
+        config(['services.bot.api_token' => $this->testApiToken]);
     }
 
     /**
@@ -32,12 +37,12 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * Helper untuk request dengan API token header.
+     * Helper untuk request dengan Bearer API token.
      */
-    protected function withApiToken(string $token): static
+    protected function withBotToken(): static
     {
         return $this->withHeaders([
-            'X-API-Token' => $token,
+            'Authorization' => 'Bearer ' . $this->testApiToken,
             'Accept' => 'application/json',
         ]);
     }

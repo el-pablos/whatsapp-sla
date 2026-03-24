@@ -9,24 +9,35 @@ class OrderResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        // Calculate subtotal from items
+        $subtotal = $this->whenLoaded('items', function () {
+            return $this->items->sum('subtotal');
+        }, 0);
+
         return [
             'id' => $this->id,
-            'order_number' => $this->order_number,
             'customer' => [
                 'phone' => $this->customer_phone,
                 'name' => $this->customer_name,
             ],
-            'items' => $this->items,
+            'items' => $this->whenLoaded('items', function () {
+                return $this->items->map(function ($item) {
+                    return [
+                        'id' => $item->id,
+                        'product_id' => $item->product_id,
+                        'product_name' => $item->product_name,
+                        'quantity' => $item->quantity,
+                        'price' => (float) $item->price,
+                        'subtotal' => (float) $item->subtotal,
+                    ];
+                });
+            }),
             'pricing' => [
-                'subtotal' => (float) $this->subtotal,
-                'discount' => (float) $this->discount,
                 'total' => (float) $this->total,
-                'formatted_total' => 'Rp ' . number_format($this->total, 0, ',', '.'),
+                'formatted_total' => 'Rp ' . number_format($this->total ?? 0, 0, ',', '.'),
             ],
             'status' => $this->status,
             'notes' => $this->notes,
-            'source' => $this->source,
-            'metadata' => $this->metadata,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
         ];

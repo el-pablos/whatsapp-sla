@@ -2,9 +2,7 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Order;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class OrderRequest extends FormRequest
 {
@@ -20,12 +18,10 @@ class OrderRequest extends FormRequest
             'customer_name' => ['required', 'string', 'max:255'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.name' => ['required', 'string', 'max:255'],
+            'items.*.product_id' => ['nullable', 'integer', 'exists:products,id'],
             'items.*.quantity' => ['required', 'integer', 'min:1'],
             'items.*.price' => ['required', 'numeric', 'min:0'],
-            'discount' => ['nullable', 'numeric', 'min:0'],
             'notes' => ['nullable', 'string', 'max:1000'],
-            'source' => ['nullable', 'string', 'max:50'],
-            'metadata' => ['nullable', 'array'],
         ];
 
         if ($this->isMethod('PUT') || $this->isMethod('PATCH')) {
@@ -50,12 +46,5 @@ class OrderRequest extends FormRequest
             'items.*.price.required' => 'Harga item wajib diisi.',
             'items.*.price.min' => 'Harga item tidak boleh negatif.',
         ];
-    }
-
-    protected function prepareForValidation(): void
-    {
-        if (!$this->has('source')) {
-            $this->merge(['source' => 'whatsapp']);
-        }
     }
 }

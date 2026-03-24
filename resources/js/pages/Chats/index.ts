@@ -1,0 +1,6 @@
+export { default } from './Index'
+export { ChatList } from './ChatList'
+export { ChatDetail } from './ChatDetail'
+export { ChatHeader } from './ChatHeader'
+export { ChatInput } from './ChatInput'
+export { MessageBubble } from './MessageBubble'

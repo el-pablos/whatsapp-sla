@@ -4,8 +4,11 @@ Main Bot Module - Webhook receiver dan message handler untuk WhatsApp SLA Bot
 import logging
 import hashlib
 import hmac
+import json
 from concurrent.futures import ThreadPoolExecutor
 from flask import Blueprint, request, current_app, jsonify
+
+from bot.handlers import handle_message, handle_status_update
 
 logger = logging.getLogger(__name__)
 
@@ -122,8 +125,11 @@ def process_message_async(message):
 
         if msg_type == "status":
             handle_status_update(message)
-        elif msg_type == "text":
-            handle_text_message(message)
+        elif msg_type == "text" or msg_type == "interactive":
+            sender = message.get("from")
+            text = message.get("text")
+            if sender and text:
+                handle_message(sender, text)
         elif msg_type in ["image", "video", "audio", "document"]:
             handle_media_message(message)
         else:
@@ -131,24 +137,6 @@ def process_message_async(message):
 
     except Exception as e:
         logger.error(f"Error processing message: {e}", exc_info=True)
-
-
-def handle_text_message(message):
-    """
-    Handle incoming text message.
-
-    Args:
-        message: Parsed message dict
-    """
-    sender = message.get("from")
-    text = message.get("text", "")
-
-    logger.info(f"Text message from {sender}: {text[:50]}...")
-
-    # TODO: Implement business logic
-    # - Check SLA status
-    # - Route ke handler spesifik
-    # - Generate response
 
 
 def handle_media_message(message):
@@ -164,23 +152,6 @@ def handle_media_message(message):
     logger.info(f"Media message ({media_type}) from {sender}")
 
     # TODO: Implement media handling
-    # - Download media
-    # - Process based on type
-
-
-def handle_status_update(message):
-    """
-    Handle message status update (sent, delivered, read).
-
-    Args:
-        message: Parsed status dict
-    """
-    status = message.get("status")
-    msg_id = message.get("message_id")
-
-    logger.debug(f"Status update: {msg_id} -> {status}")
-
-    # TODO: Update message status di database
 
 
 @webhook_bp.route("/webhook", methods=["GET"])
@@ -211,7 +182,7 @@ def receive_webhook():
     """
     # Verify signature
     signature = request.headers.get("X-Hub-Signature-256")
-    if not verify_webhook_signature(request.data, signature):
+    if signature and not verify_webhook_signature(request.data, signature):
         logger.warning("Invalid webhook signature")
         return "Unauthorized", 401
 

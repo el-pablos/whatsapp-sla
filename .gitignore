@@ -1,0 +1,78 @@
+# Laravel
+/.phpunit.cache
+/bootstrap/ssr
+/node_modules
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+/vendor
+
+# Environment files - NEVER commit these!
+.env
+.env.*
+!.env.example
+
+# IDE
+.phpactor.json
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+/.fleet
+/.idea
+/.nova
+/.vscode
+/.zed
+
+# Logs
+npm-debug.log
+yarn-error.log
+*.log
+
+# Auth
+/auth.json
+
+# Docker
+**/caddy
+frankenphp
+frankenphp-worker.php
+
+# Test artifacts
+tests-e2e/screenshots/
+test-results/
+/playwright-report/
+.pytest_cache/
+__pycache__/
+*.pyc
+
+# Python
+*.egg-info/
+dist/
+build/
+.eggs/
+*.so
+.Python
+venv/
+.venv/
+
+# Secrets & Credentials - CRITICAL!
+*.pem
+*.key
+*.crt
+secrets/
+credentials/
+**/secrets.json
+**/credentials.json
+**/token.json
+cookies.txt
+*.cookies
+
+# Dump/temp files
+/dump/
+*.tmp
+*.temp
+
+# OS
+.DS_Store
+Thumbs.db

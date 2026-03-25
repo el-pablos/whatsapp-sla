@@ -1,0 +1,17 @@
+Tanggal backup: 2026-03-24
+Nama issue: role-constraint-mismatch
+Deskripsi: Mismatch antara enum values di migration users (admin, operator, viewer) dengan constants di User model (ROLE_ADMIN, ROLE_STAFF)
+
+Daftar file yang di-backup:
+- app/Models/User.php
+- database/factories/UserFactory.php
+
+Root cause:
+- Migration mendefinisikan enum: ['admin', 'operator', 'viewer']
+- User Model mendefinisikan: ROLE_ADMIN = 'admin', ROLE_STAFF = 'staff'
+- 'staff' tidak ada dalam enum, menyebabkan CHECK constraint violation saat insert
+
+Fix:
+- Update User Model constants agar sesuai dengan migration enum values
+- ROLE_STAFF -> ROLE_OPERATOR
+- Tambah ROLE_VIEWER

@@ -68,6 +68,16 @@ credentials/
 cookies.txt
 *.cookies
 
+# WhatsApp Baileys Sessions - NEVER COMMIT!
+sessions/
+wa-sessions/
+auth_info*/
+**/creds.json
+**/pre-key*.json
+**/sender-key*.json
+**/app-state*.json
+**/session-*.json
+
 # Dump/temp files
 /dump/
 *.tmp

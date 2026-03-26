@@ -43,6 +43,13 @@ Route::middleware('auth')->group(function () {
     Route::post('chats/{chat}/takeover', [ChatController::class, 'takeover'])->name('chats.takeover');
     Route::post('chats/{chat}/resolve', [ChatController::class, 'resolve'])->name('chats.resolve');
 
+    // Baileys Auth Routes
+    Route::prefix('whatsapp')->name('baileys.')->group(function () {
+        Route::get('auth', [BaileysAuthController::class, 'showQR'])->name('auth');
+        Route::post('auth/logout', [BaileysAuthController::class, 'logout'])->name('logout');
+        Route::post('auth/restart', [BaileysAuthController::class, 'restart'])->name('restart');
+    });
+
     // Settings (admin only)
     Route::get('settings', [SettingsController::class, 'index'])
         ->middleware('admin')

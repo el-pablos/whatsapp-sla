@@ -1,14 +1,15 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\ProductController;
-use App\Http\Controllers\Api\StockController;
-use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\Api\ChatController;
 use App\Http\Controllers\Api\MessageController;
-use App\Http\Controllers\Api\CatalogController;
+use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\StockController;
+use App\Http\Controllers\WebhookController;
+use App\Services\BaileysService;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,11 +32,30 @@ Route::get('/health', function () {
     return response()->json([
         'success' => true,
         'message' => 'API is running',
-        'data'    => [
-            'status'    => 'healthy',
+        'data' => [
+            'status' => 'healthy',
             'timestamp' => now()->toIso8601String(),
         ],
     ]);
+});
+
+// Baileys health endpoint
+Route::get('/health/baileys', function () {
+    $baileys = app(BaileysService::class);
+    $metrics = $baileys->getHealthMetrics();
+    $status = $baileys->getConnectionStatus();
+
+    $isHealthy = $status['status'] === 'open' && $status['authenticated'];
+
+    return response()->json([
+        'service' => 'baileys',
+        'status' => $isHealthy ? 'healthy' : 'unhealthy',
+        'details' => [
+            'connection' => $status,
+            'metrics' => $metrics,
+        ],
+        'timestamp' => now()->toIso8601String(),
+    ], $isHealthy ? 200 : 503);
 });
 
 // Auth routes - Sanctum token-based authentication
@@ -48,8 +68,31 @@ Route::prefix('auth')->group(function () {
     });
 });
 
+// Baileys Auth API - requires authentication
+Route::prefix('baileys')->middleware('auth:sanctum')->group(function () {
+    Route::get('/status', [BaileysAuthController::class, 'status']);
+    Route::post('/qr/request', [BaileysAuthController::class, 'requestQR']);
+    Route::get('/qr', [BaileysAuthController::class, 'getQR']);
+    Route::post('/pairing', [BaileysAuthController::class, 'requestPairing']);
+    Route::post('/logout', [BaileysAuthController::class, 'logout']);
+    Route::post('/restart', [BaileysAuthController::class, 'restart']);
+    Route::get('/metrics', [BaileysAuthController::class, 'metrics']);
+});
+
 // Protected routes - requires API token
 Route::middleware(['api.token', 'throttle:api'])->group(function () {
+
+    // WhatsApp Status & Management
+    Route::prefix('whatsapp')->group(function () {
+        Route::get('/status', [WhatsAppStatusController::class, 'status']);
+        Route::get('/ready', [WhatsAppStatusController::class, 'ready']);
+        Route::get('/qr', [WhatsAppStatusController::class, 'qr']);
+        Route::delete('/cache', [WhatsAppStatusController::class, 'clearCache']);
+
+        // Development only
+        Route::post('/test-event', [WhatsAppStatusController::class, 'testEvent'])
+            ->middleware(['throttle:5,1']); // max 5 per minute
+    });
 
     // Products
     Route::prefix('products')->group(function () {

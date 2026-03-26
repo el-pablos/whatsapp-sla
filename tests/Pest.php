@@ -1,16 +1,23 @@
 <?php
 
+use App\Models\Order;
+use App\Models\Product;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
 /*
 |--------------------------------------------------------------------------
 | Test Case
 |--------------------------------------------------------------------------
 |
 | Base TestCase yang digunakan semua test.
+| fix: tambahkan RefreshDatabase untuk proper database isolation - 2026-03-26
 |
 */
 
-uses(Tests\TestCase::class)->in('Feature');
-uses(Tests\TestCase::class)->in('Unit');
+uses(TestCase::class, RefreshDatabase::class)->in('Feature');
+uses(TestCase::class, RefreshDatabase::class)->in('Unit');
 
 /*
 |--------------------------------------------------------------------------
@@ -38,22 +45,22 @@ expect()->extend('toBeValidOrderNumber', function () {
 |
 */
 
-function createUser(array $attributes = []): \App\Models\User
+function createUser(array $attributes = []): User
 {
-    return \App\Models\User::factory()->create($attributes);
+    return User::factory()->create($attributes);
 }
 
-function createAdmin(): \App\Models\User
+function createAdmin(): User
 {
-    return \App\Models\User::factory()->admin()->create();
+    return User::factory()->admin()->create();
 }
 
-function createProduct(array $attributes = []): \App\Models\Product
+function createProduct(array $attributes = []): Product
 {
-    return \App\Models\Product::factory()->create($attributes);
+    return Product::factory()->create($attributes);
 }
 
-function createOrder(array $attributes = []): \App\Models\Order
+function createOrder(array $attributes = []): Order
 {
-    return \App\Models\Order::factory()->create($attributes);
+    return Order::factory()->create($attributes);
 }

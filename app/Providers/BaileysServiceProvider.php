@@ -63,7 +63,7 @@ class BaileysServiceProvider extends ServiceProvider
             'config:cache', 'config:clear', 'cache:clear', 'migrate',
             'migrate:fresh', 'db:seed', 'queue:work', 'schedule:run',
             'package:discover', 'key:generate', 'optimize', 'optimize:clear',
-            'view:clear', 'route:clear', 'storage:link',
+            'view:clear', 'route:clear', 'storage:link', 'baileys:validate-env',
         ];
 
         if ($this->app->runningInConsole()) {
@@ -154,7 +154,13 @@ class BaileysServiceProvider extends ServiceProvider
     private function validateStoragePaths(): void
     {
         $sessionPath = config('services.baileys.session_path', 'app/baileys-sessions');
-        $fullSessionPath = storage_path($sessionPath);
+
+        // Handle both relative and absolute paths
+        if (str_starts_with($sessionPath, '/')) {
+            $fullSessionPath = $sessionPath;
+        } else {
+            $fullSessionPath = storage_path($sessionPath);
+        }
 
         if (! File::isWritable(dirname($fullSessionPath))) {
             throw new \RuntimeException(
@@ -192,11 +198,12 @@ class BaileysServiceProvider extends ServiceProvider
      */
     private function ensureBaileysDirectories(): void
     {
+        // fix: gunakan resolvePath untuk handle absolute/relative path - 2026-03-26
         $directories = [
-            config('baileys.session_path', storage_path('app/baileys-sessions')),
-            config('baileys.auth_state_path', storage_path('app/baileys-auth')),
-            config('baileys.media_path', storage_path('app/baileys-media')),
-            config('baileys.logs_path', storage_path('logs/baileys')),
+            $this->resolvePath(config('baileys.session_path', 'app/baileys-sessions')),
+            $this->resolvePath(config('baileys.auth_state_path', 'app/baileys-auth')),
+            $this->resolvePath(config('baileys.media_path', 'app/baileys-media')),
+            $this->resolvePath(config('baileys.logs_path', 'logs/baileys')),
         ];
 
         foreach ($directories as $dir) {
@@ -207,12 +214,26 @@ class BaileysServiceProvider extends ServiceProvider
         }
 
         // Create .gitignore for session data security
-        $sessionPath = config('baileys.session_path', storage_path('app/baileys-sessions'));
+        $sessionPath = $this->resolvePath(config('baileys.session_path', 'app/baileys-sessions'));
         $gitignorePath = $sessionPath.'/.gitignore';
 
         if (! File::exists($gitignorePath)) {
             File::put($gitignorePath, "*\n!.gitignore\n");
         }
+    }
+
+    /**
+     * Resolve path - handle both absolute and relative paths
+     * Jika path sudah absolute (dimulai dengan /), gunakan langsung
+     * Jika relative, wrap dengan storage_path()
+     */
+    private function resolvePath(string $path): string
+    {
+        if (str_starts_with($path, '/')) {
+            return $path;
+        }
+
+        return storage_path($path);
     }
 
     /**

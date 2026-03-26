@@ -335,7 +335,7 @@ export class QRHandler extends EventEmitter {
 }
 
 // Type augmentation untuk proper event typing
-declare interface QRHandler {
+export interface QRHandlerEventMethods {
   on<K extends keyof QREvents>(event: K, listener: QREvents[K]): this;
   emit<K extends keyof QREvents>(
     event: K,

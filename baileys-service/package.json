@@ -6,11 +6,13 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "dev": "ts-node src/index.ts",
+    "dev": "ts-node src/demo.ts",
+    "start": "node dist/startup.js",
+    "start:dev": "ts-node src/startup.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "eslint src --ext .ts",
-    "start": "node dist/index.js"
+    "api:start": "ts-node src/startup.ts"
   },
   "dependencies": {
     "@hapi/boom": "^10.0.1",

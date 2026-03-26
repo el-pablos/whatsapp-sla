@@ -1,8 +1,9 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+
 use function Pest\Laravel\getJson;
-use function Pest\Laravel\postJson;
 
 describe('Authentication', function () {
 
@@ -18,7 +19,7 @@ describe('Authentication', function () {
                 ->assertJsonStructure([
                     'success',
                     'message',
-                    'data' => ['status', 'timestamp']
+                    'data' => ['status', 'timestamp'],
                 ]);
         });
 
@@ -51,8 +52,8 @@ describe('Authentication', function () {
                 'password' => 'secretpassword',
             ]);
 
-            expect(\Illuminate\Support\Facades\Hash::check('secretpassword', $user->password))->toBeTrue();
-            expect(\Illuminate\Support\Facades\Hash::check('wrongpassword', $user->password))->toBeFalse();
+            expect(Hash::check('secretpassword', $user->password))->toBeTrue();
+            expect(Hash::check('wrongpassword', $user->password))->toBeFalse();
         });
 
         it('creates API token for user', function () {

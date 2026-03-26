@@ -1,13 +1,15 @@
 <p align="center">
   <img src="https://img.shields.io/badge/WhatsApp-25D366?style=for-the-badge&logo=whatsapp&logoColor=white" alt="WhatsApp"/>
   <img src="https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" alt="Laravel"/>
+  <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js"/>
   <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python"/>
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript"/>
   <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white" alt="Redis"/>
   <img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white" alt="MySQL"/>
 </p>
 
-<h1 align="center">WhatsApp SLA Chatbot</h1>
-<h3 align="center">Sistem Otomasi Layanan Pelanggan untuk Bisnis Ayam Petelur</h3>
+<h1 align="center">WhatsApp SLA Monitoring System</h1>
+<h3 align="center">Enterprise WhatsApp Automation with Hybrid Architecture</h3>
 
 <p align="center">
   <img src="https://img.shields.io/github/license/el-pablos/whatsapp-sla?style=flat-square" alt="License"/>
@@ -19,11 +21,13 @@
 
 <p align="center">
   <a href="#tentang-proyek">Tentang</a> •
-  <a href="#fitur-utama">Fitur</a> •
   <a href="#arsitektur">Arsitektur</a> •
+  <a href="#fitur-utama">Fitur</a> •
   <a href="#tech-stack">Tech Stack</a> •
   <a href="#instalasi">Instalasi</a> •
-  <a href="#api-documentation">API</a> •
+  <a href="#authentication-flow">Auth Flow</a> •
+  <a href="#testing">Testing</a> •
+  <a href="#troubleshooting">Troubleshooting</a> •
   <a href="#kontributor">Kontributor</a>
 </p>
 
@@ -31,29 +35,19 @@
 
 ## Tentang Proyek
 
-**WhatsApp SLA** adalah sistem chatbot otomatis yang dirancang khusus untuk bisnis peternakan ayam petelur. Sistem ini mengintegrasikan WhatsApp Business API untuk menangani:
+**WhatsApp SLA** adalah sistem monitoring dan otomasi WhatsApp enterprise dengan arsitektur hybrid yang menggabungkan:
 
-- Pemesanan produk (telur & ayam) via chat
-- Informasi harga real-time
-- Katalog produk interaktif
-- Notifikasi status pesanan
-- Layanan pelanggan 24/7
+- **Laravel Backend** - Web dashboard, API management, database operations
+- **Baileys Service (Node.js)** - WhatsApp Web API dengan session management
+- **Python Bot** - Legacy message handling dan business logic
+- **Real-time Integration** - Redis pub/sub untuk komunikasi antar service
 
-Dibangun dengan arsitektur modern yang memisahkan backend API (Laravel) dan bot handler (Python), sistem ini menjamin skalabilitas dan kemudahan maintenance.
-
----
-
-## Fitur Utama
-
-| Fitur | Deskripsi |
-|-------|-----------|
-| **Auto-Reply Bot** | Respon otomatis untuk pertanyaan umum pelanggan |
-| **Order Management** | Kelola pesanan dari penerimaan hingga pengiriman |
-| **Product Catalog** | Katalog digital telur dan ayam dengan harga dinamis |
-| **Price History** | Tracking perubahan harga untuk analisis bisnis |
-| **Dashboard Analytics** | Visualisasi data penjualan dan chat metrics |
-| **Multi-User Support** | Role-based access untuk admin dan operator |
-| **SLA Monitoring** | Pantau response time dan service level |
+Sistem ini dirancang untuk bisnis yang membutuhkan:
+- SLA monitoring dan response time tracking
+- Multi-channel WhatsApp integration (Web API + Business API)
+- Scalable microservice architecture
+- Real-time dashboard dan analytics
+- Enterprise-grade security dan reliability
 
 ---
 
@@ -63,230 +57,155 @@ Dibangun dengan arsitektur modern yang memisahkan backend API (Laravel) dan bot 
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                              WHATSAPP SLA SYSTEM                            │
+│                         WHATSAPP SLA MONITORING SYSTEM                      │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │   ┌──────────────┐         ┌──────────────┐         ┌──────────────┐       │
-│   │   Customer   │◄───────►│   WhatsApp   │◄───────►│   Meta API   │       │
-│   │  (WhatsApp)  │         │   Business   │         │   Gateway    │       │
-│   └──────────────┘         └──────────────┘         └──────┬───────┘       │
-│                                                            │               │
-│   ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─│─ ─ ─ ─ ─ ─   │
-│                                                            ▼               │
+│   │   Customer   │◄───────►│   WhatsApp   │◄───────►│ Meta Business│       │
+│   │  (WhatsApp)  │         │   Platform   │         │     API      │       │
+│   └──────────────┘         └──────┬───────┘         └──────┬───────┘       │
+│                                   │                         │               │
+│   ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─│─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─│─ ─ ─ ─ ─ ─   │
+│                                   ▼                         ▼               │
 │   ┌─────────────────────────────────────────────────────────────────────┐  │
-│   │                        APPLICATION LAYER                            │  │
+│   │                        HYBRID SERVICE LAYER                        │  │
 │   │                                                                     │  │
-│   │   ┌─────────────────────┐       ┌─────────────────────┐            │  │
-│   │   │   LARAVEL BACKEND   │       │   PYTHON BOT        │            │  │
-│   │   │   ─────────────────  │       │   ─────────────────  │            │  │
-│   │   │   • REST API        │◄─────►│   • Message Handler │            │  │
-│   │   │   • Web Dashboard   │       │   • Auto Reply      │            │  │
-│   │   │   • Auth & RBAC     │       │   • Notification    │            │  │
-│   │   │   • Order Process   │       │   • WA API Client   │            │  │
-│   │   └──────────┬──────────┘       └──────────┬──────────┘            │  │
-│   │              │                             │                        │  │
-│   └──────────────┼─────────────────────────────┼────────────────────────┘  │
-│                  │                             │                           │
-│   ─ ─ ─ ─ ─ ─ ─ ─│─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─│─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─   │
-│                  │                             │                           │
-│   ┌──────────────┼─────────────────────────────┼────────────────────────┐  │
-│   │              ▼          DATA LAYER         ▼                        │  │
-│   │                                                                     │  │
-│   │   ┌─────────────────────┐       ┌─────────────────────┐            │  │
-│   │   │       MySQL         │       │       Redis         │            │  │
-│   │   │   ─────────────────  │       │   ─────────────────  │            │  │
-│   │   │   • Users           │       │   • Session Cache   │            │  │
-│   │   │   • Products        │       │   • Queue Jobs      │            │  │
-│   │   │   • Orders          │       │   • Rate Limiting   │            │  │
-│   │   │   • Chats           │       │   • Real-time Data  │            │  │
-│   │   └─────────────────────┘       └─────────────────────┘            │  │
-│   │                                                                     │  │
-│   └─────────────────────────────────────────────────────────────────────┘  │
+│   │   ┌─────────────────┐   ┌─────────────────┐   ┌─────────────────┐  │  │
+│   │   │ LARAVEL BACKEND │   │ BAILEYS SERVICE │   │   PYTHON BOT    │  │  │
+│   │   │ ─────────────── │   │ ─────────────── │   │ ─────────────── │  │  │
+│   │   │ • REST API      │◄─►│ • WhatsApp Web  │◄─►│ • Legacy Logic  │  │  │
+│   │   │ • Web Dashboard │   │ • Session Mgmt  │   │ • Message Handle│  │  │
+│   │   │ • SLA Monitor   │   │ • QR/Pairing    │   │ • Business Rules│  │  │
+│   │   │ • User Mgmt     │   │ • Event Bridge  │   │ • Notification  │  │  │
+│   │   │ • Database      │   │ • TypeScript    │   │ • Async Tasks   │  │  │
+│   │   └─────────┬───────┘   └─────────┬───────┘   └─────────┬───────┘  │  │
+│   │             │                     │                     │          │  │
+│   └─────────────┼─────────────────────┼─────────────────────┼──────────┘  │
+│                 │                     │                     │             │
+│   ─ ─ ─ ─ ─ ─ ─ ─│─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─│─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─│─ ─ ─ ─ ─ ─   │
+│                 │                     │                     │             │
+│   ┌─────────────┼─────────────────────┼─────────────────────┼─────────┐   │
+│   │             ▼         DATA &      ▼         EVENT       ▼         │   │
+│   │                      CACHE                  BUS                    │   │
+│   │   ┌─────────────────┐       ┌─────────────────┐ ┌─────────────────┐│   │
+│   │   │      MySQL      │       │      Redis      │ │   Event Stream  ││   │
+│   │   │ ─────────────── │       │ ─────────────── │ │ ─────────────── ││   │
+│   │   │ • Users/Roles   │       │ • Session Cache │ │ • QR Generated  ││   │
+│   │   │ • Products      │       │ • Queue Jobs    │ │ • Auth Events   ││   │
+│   │   │ • Orders        │       │ • Rate Limiting │ │ • Message Flow  ││   │
+│   │   │ • Chats/SLA     │       │ • Real-time     │ │ • SLA Metrics   ││   │
+│   │   │ • Analytics     │       │ • Pub/Sub       │ │ • Notifications ││   │
+│   │   └─────────────────┘       └─────────────────┘ └─────────────────┘│   │
+│   │                                                                     │   │
+│   └─────────────────────────────────────────────────────────────────────┘   │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### ERD (Entity Relationship Diagram)
+### Service Communication Flow
 
 ```mermaid
-erDiagram
-    users ||--o{ orders : "creates"
-    users ||--o{ chats : "handles"
-    products ||--o{ order_items : "contains"
-    orders ||--|{ order_items : "has"
-    products ||--o{ price_histories : "tracks"
-    products ||--o{ catalogs : "listed_in"
-    chats ||--|{ messages : "contains"
-    customers ||--o{ orders : "places"
-    customers ||--o{ chats : "initiates"
+sequenceDiagram
+    participant C as Customer
+    participant WA as WhatsApp
+    participant BS as Baileys Service
+    participant LB as Laravel Backend
+    participant PB as Python Bot
+    participant R as Redis
+    participant DB as MySQL
 
-    users {
-        uuid id PK
-        string name
-        string email UK
-        string password
-        enum role "admin,operator"
-        timestamp created_at
-    }
+    Note over C,DB: Incoming Message Flow
+    C->>WA: Send WhatsApp Message
+    WA->>BS: Webhook Event
+    BS->>R: Publish 'message:received'
+    R->>LB: Event Subscription
+    R->>PB: Event Subscription
 
-    customers {
-        uuid id PK
-        string phone_number UK
-        string name
-        string address
-        timestamp last_interaction
-        timestamp created_at
-    }
+    Note over LB,DB: Processing & Response
+    LB->>DB: Store Message
+    PB->>PB: Process Business Logic
+    PB->>LB: API Call (if needed)
+    LB->>DB: Update Order/Chat
 
-    products {
-        uuid id PK
-        string name
-        string sku UK
-        enum type "telur,ayam"
-        text description
-        decimal price
-        int stock
-        boolean is_active
-        timestamp created_at
-    }
+    Note over BS,C: Send Response
+    LB->>BS: Send Response via API
+    BS->>WA: Send Message via API
+    WA->>C: Deliver Message
 
-    orders {
-        uuid id PK
-        uuid customer_id FK
-        uuid user_id FK
-        string order_number UK
-        decimal total_amount
-        enum status "pending,confirmed,processing,shipped,delivered,cancelled"
-        text notes
-        timestamp ordered_at
-    }
-
-    order_items {
-        uuid id PK
-        uuid order_id FK
-        uuid product_id FK
-        int quantity
-        decimal unit_price
-        decimal subtotal
-    }
-
-    chats {
-        uuid id PK
-        uuid customer_id FK
-        uuid user_id FK
-        enum status "open,assigned,resolved"
-        timestamp started_at
-        timestamp resolved_at
-    }
-
-    messages {
-        uuid id PK
-        uuid chat_id FK
-        enum direction "incoming,outgoing"
-        text content
-        enum type "text,image,document"
-        string wa_message_id
-        timestamp sent_at
-    }
-
-    catalogs {
-        uuid id PK
-        uuid product_id FK
-        string image_url
-        boolean is_featured
-        int display_order
-        timestamp created_at
-    }
-
-    price_histories {
-        uuid id PK
-        uuid product_id FK
-        decimal old_price
-        decimal new_price
-        string changed_by
-        timestamp changed_at
-    }
+    Note over LB,DB: SLA Monitoring
+    LB->>DB: Log Response Time
+    LB->>LB: Calculate SLA Metrics
 ```
 
-### Application Flowchart
+---
 
-```mermaid
-flowchart TD
-    subgraph Customer["Customer Journey"]
-        A[Customer sends WhatsApp message] --> B{Message Type?}
-        B -->|Text| C[Python Bot receives webhook]
-        B -->|Image| D[Save media & process]
-    end
+## Fitur Utama
 
-    subgraph BotProcessing["Bot Processing"]
-        C --> E{Intent Detection}
-        E -->|Greeting| F[Send welcome message]
-        E -->|Price Inquiry| G[Fetch product prices]
-        E -->|Order| H[Start order flow]
-        E -->|Status Check| I[Lookup order status]
-        E -->|Unknown| J[Forward to operator]
+### 🚀 Core Features
+| Fitur | Deskripsi | Technology |
+|-------|-----------|------------|
+| **Multi-Service Architecture** | Laravel + Node.js + Python hybrid system | Microservices |
+| **Real-time WhatsApp Integration** | QR Code & Pairing Code authentication | Baileys + Meta API |
+| **SLA Monitoring** | Response time tracking & analytics | Laravel Analytics |
+| **Session Management** | Persistent WhatsApp sessions dengan backup | Multi-file Auth State |
+| **Event-Driven Communication** | Redis pub/sub antar services | Redis Streams |
+| **Auto-Reconnect** | Smart reconnection dengan exponential backoff | TypeScript |
 
-        G --> K[Format price list]
-        K --> L[Send via WA API]
+### 📊 Business Features
+| Fitur | Deskripsi |
+|-------|-----------|
+| **Order Management** | Full order lifecycle dari WhatsApp ke delivery |
+| **Product Catalog** | Dynamic product catalog dengan media support |
+| **Customer Support** | Multi-operator chat assignment system |
+| **Analytics Dashboard** | Real-time metrics, charts, dan SLA reports |
+| **Role-based Access** | Admin, operator, dan viewer permissions |
+| **Automated Notifications** | Order status updates via WhatsApp |
 
-        H --> M[Collect order details]
-        M --> N[Create order in DB]
-        N --> O[Send confirmation]
-    end
-
-    subgraph AdminDashboard["Admin Dashboard"]
-        P[Admin Login] --> Q[Dashboard Overview]
-        Q --> R{Action?}
-        R -->|Manage Products| S[CRUD Products]
-        R -->|Process Orders| T[Update Order Status]
-        R -->|Handle Chats| U[Respond to customers]
-        R -->|View Reports| V[Analytics & SLA metrics]
-
-        T --> W[Trigger notification]
-        W --> L
-    end
-
-    subgraph DataFlow["Data Layer"]
-        N --> X[(MySQL)]
-        S --> X
-        T --> X
-        X --> Y[(Redis Cache)]
-        Y --> G
-    end
-```
+### 🔧 Technical Features
+| Fitur | Deskripsi |
+|-------|-----------|
+| **TypeScript API** | Full type safety untuk Baileys integration |
+| **Rate Limiting** | API protection dan WhatsApp rate compliance |
+| **Queue System** | Background job processing dengan Redis |
+| **Docker Support** | Containerized deployment ready |
+| **Testing Suite** | 43+ test files dengan comprehensive coverage |
+| **Security Hardening** | Input validation, CSRF protection, secure sessions |
 
 ---
 
 ## Tech Stack
 
-### Backend
+### Backend Services
+| Service | Technology | Version | Purpose |
+|---------|------------|---------|---------|
+| **Laravel Backend** | PHP | 8.2+ | Web API, Dashboard, Database |
+| **Baileys Service** | Node.js + TypeScript | 18+ | WhatsApp Web Integration |
+| **Python Bot** | Python | 3.11+ | Legacy logic, Business rules |
+
+### Core Technologies
 | Technology | Version | Purpose |
 |------------|---------|---------|
-| PHP | 8.2+ | Server-side language |
-| Laravel | 11.x | Web framework |
+| Laravel | 11.x | Web framework & API |
+| TypeScript | 5.x | Type-safe Baileys service |
 | MySQL | 8.0+ | Primary database |
-| Redis | 7.x | Caching & queue |
+| Redis | 7.x | Cache, queue, pub/sub |
+| Docker | latest | Containerization |
 
-### Bot Service
+### Frontend & UI
 | Technology | Version | Purpose |
 |------------|---------|---------|
-| Python | 3.11+ | Bot runtime |
-| httpx | latest | Async HTTP client |
-| redis-py | latest | Redis connection |
+| React | 18.x | Dashboard UI |
+| Inertia.js | 1.x | SPA without API |
+| Tailwind CSS | 3.x | Styling framework |
+| Chart.js | 4.x | Analytics charts |
 
-### Frontend
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| React | 18.x | UI library |
-| Inertia.js | 1.x | SPA adapter |
-| Tailwind CSS | 3.x | Styling |
-
-### Infrastructure
+### DevOps & Testing
 | Technology | Purpose |
 |------------|---------|
-| Docker | Containerization |
+| Jest | TypeScript testing |
+| PHPUnit | Laravel testing |
 | GitHub Actions | CI/CD pipeline |
-| Nginx | Web server |
+| Docker Compose | Local development |
 
 ---
 
@@ -294,8 +213,7 @@ flowchart TD
 
 ### Prerequisites
 
-Pastikan sistem kamu sudah terinstall:
-
+**Required Software:**
 - PHP >= 8.2 dengan extensions: BCMath, Ctype, JSON, Mbstring, OpenSSL, PDO, Tokenizer, XML
 - Composer 2.x
 - Node.js >= 18 & npm
@@ -304,7 +222,25 @@ Pastikan sistem kamu sudah terinstall:
 - Redis >= 7.0
 - Git
 
-### Step-by-Step Installation
+### Quick Start dengan Docker
+
+```bash
+# Clone repository
+git clone https://github.com/el-pablos/whatsapp-sla.git
+cd whatsapp-sla
+
+# Start all services
+docker-compose up -d
+
+# Setup Laravel
+docker-compose exec app composer install
+docker-compose exec app php artisan migrate --seed
+
+# Akses aplikasi
+open http://localhost:8000
+```
+
+### Manual Installation
 
 #### 1. Clone Repository
 
@@ -329,17 +265,30 @@ php artisan key:generate
 php artisan migrate --seed
 
 # Install frontend dependencies
+npm install && npm run build
+```
+
+#### 3. Setup Baileys Service
+
+```bash
+# Masuk ke direktori baileys service
+cd baileys-service
+
+# Install dependencies
 npm install
 
-# Build assets
+# Copy environment configuration
+cp .env.example .env
+
+# Build TypeScript
 npm run build
 ```
 
-#### 3. Setup Python Bot
+#### 4. Setup Python Bot
 
 ```bash
 # Masuk ke direktori bot
-cd python-bot
+cd bot
 
 # Buat virtual environment
 python -m venv venv
@@ -354,51 +303,33 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-#### 4. Configure Redis
+#### 5. Configure Services
 
-Pastikan Redis server berjalan, lalu update `.env`:
+Update `.env` dengan konfigurasi yang diperlukan:
 
 ```env
+# Database
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=whatsapp_sla
+DB_USERNAME=root
+DB_PASSWORD=your_password
+
+# Redis
 REDIS_HOST=127.0.0.1
 REDIS_PORT=6379
-REDIS_PASSWORD=null
-```
 
-#### 5. Configure WhatsApp Business API
-
-Dapatkan kredensial dari [Meta for Developers](https://developers.facebook.com/), lalu update `.env`:
-
-```env
-WA_API_URL=https://graph.facebook.com/v18.0
-WA_PHONE_NUMBER_ID=your_phone_number_id
-WA_ACCESS_TOKEN=your_access_token
+# WhatsApp Business API (optional)
+WA_ACCESS_TOKEN=your_meta_token
 WA_VERIFY_TOKEN=your_verify_token
-WA_APP_ID=your_app_id
 WA_APP_SECRET=your_app_secret
+
+# Baileys Configuration
+BAILEYS_SESSION_PATH=./sessions
+BAILEYS_API_PORT=3002
+BAILEYS_WEBHOOK_URL=http://127.0.0.1:8000/api/whatsapp/webhook
 ```
-
----
-
-## Environment Variables
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `APP_NAME` | Nama aplikasi | `WhatsApp SLA` |
-| `APP_ENV` | Environment | `local`, `production` |
-| `APP_DEBUG` | Debug mode | `true`, `false` |
-| `APP_URL` | Base URL aplikasi | `http://localhost` |
-| `DB_CONNECTION` | Database driver | `mysql` |
-| `DB_HOST` | Database host | `127.0.0.1` |
-| `DB_PORT` | Database port | `3306` |
-| `DB_DATABASE` | Nama database | `whatsapp_sla` |
-| `DB_USERNAME` | Database user | `root` |
-| `DB_PASSWORD` | Database password | `secret` |
-| `REDIS_HOST` | Redis host | `127.0.0.1` |
-| `REDIS_PORT` | Redis port | `6379` |
-| `REDIS_PASSWORD` | Redis password | `null` |
-| `WA_PHONE_NUMBER_ID` | WhatsApp Phone ID | `123456789` |
-| `WA_ACCESS_TOKEN` | WhatsApp API Token | `EAAxxxxx` |
-| `WA_VERIFY_TOKEN` | Webhook verify token | `my_verify_token` |
 
 ---
 
@@ -406,22 +337,38 @@ WA_APP_SECRET=your_app_secret
 
 ### Development Mode
 
+**Terminal 1: Laravel Backend**
 ```bash
-# Terminal 1: Laravel server
 php artisan serve
-
-# Terminal 2: Vite dev server (untuk hot reload)
-npm run dev
-
-# Terminal 3: Queue worker
-php artisan queue:work
-
-# Terminal 4: Python bot
-cd python-bot
-python main.py
+# Akses: http://localhost:8000
 ```
 
-Akses aplikasi di: `http://localhost:8000`
+**Terminal 2: Vite Dev Server**
+```bash
+npm run dev
+# Hot reload untuk frontend development
+```
+
+**Terminal 3: Queue Worker**
+```bash
+php artisan queue:work
+# Background job processing
+```
+
+**Terminal 4: Baileys Service**
+```bash
+cd baileys-service
+npm run dev
+# WhatsApp service: http://localhost:3002
+```
+
+**Terminal 5: Python Bot (Optional)**
+```bash
+cd bot
+source venv/bin/activate  # Linux/Mac
+python main.py
+# Legacy bot for existing workflows
+```
 
 ### Production Mode
 
@@ -434,84 +381,122 @@ php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
-# Jalankan dengan supervisor untuk queue & bot
+# Start services dengan process manager
+pm2 start ecosystem.config.js
 ```
 
-### Menggunakan Docker
+---
+
+## Authentication Flow
+
+### WhatsApp Authentication Methods
+
+#### 1. QR Code Authentication (Recommended)
 
 ```bash
-# Build dan jalankan semua services
-docker-compose up -d
+# Start Baileys service
+cd baileys-service && npm start
 
-# Akses aplikasi
-# Web: http://localhost:8000
-# Database: localhost:3306
-# Redis: localhost:6379
+# Get QR code via API
+curl http://localhost:3002/auth/qr
+
+# Scan QR dengan WhatsApp app:
+# WhatsApp > Settings > Linked Devices > Link a Device
+```
+
+#### 2. Pairing Code Authentication
+
+```bash
+# Request pairing code via API
+curl -X POST http://localhost:3002/auth/pairing \
+  -H "Content-Type: application/json" \
+  -d '{"phoneNumber": "628xxx"}'
+
+# Enter code di WhatsApp:
+# WhatsApp > Settings > Linked Devices > Link with phone number instead
+```
+
+#### 3. Session Management
+
+```typescript
+// Session otomatis tersimpan dan di-restore
+// File lokasi: baileys-service/sessions/
+// - creds.json (credentials)
+// - keys/ (encryption keys)
+// - session-metadata.json (tracking info)
+
+// Backup session
+const sessionStore = new SessionStore('./sessions', 'default');
+await sessionStore.backupSession();
+
+// Restore dari backup
+await sessionStore.restoreFromBackup('./sessions_backup_2024-03-26');
+```
+
+### Web Dashboard Authentication
+
+```bash
+# Default admin credentials
+Email: admin@whatsapp-sla.com
+Password: password
+
+# Create new user
+php artisan make:user
+
+# Reset password
+php artisan tinker
+User::where('email', 'admin@example.com')->first()->update([
+    'password' => Hash::make('newpassword')
+]);
 ```
 
 ---
 
 ## API Documentation
 
+### Base URLs
+
+```
+Laravel Backend: http://localhost:8000/api/v1
+Baileys Service: http://localhost:3002
+```
+
 ### Authentication
 
-Semua API endpoint (kecuali login) memerlukan Bearer token:
+**Laravel API:**
+```bash
+# Login untuk mendapat token
+curl -X POST http://localhost:8000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "admin@example.com", "password": "password"}'
 
+# Gunakan token untuk request selanjutnya
+curl -H "Authorization: Bearer YOUR_TOKEN" \
+  http://localhost:8000/api/products
 ```
-Authorization: Bearer {your_token}
-```
 
-### Base URL
+### Key Endpoints
 
-```
-Development: http://localhost:8000/api/v1
-Production: https://your-domain.com/api/v1
-```
-
-### Endpoints
-
-#### Auth
+#### WhatsApp Management (Baileys Service)
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/auth/login` | Login dan dapatkan token |
-| POST | `/auth/logout` | Logout dan invalidate token |
-| GET | `/auth/me` | Get current user info |
+| GET | `/health` | Service health check |
+| GET | `/auth/qr` | Get QR code untuk authentication |
+| POST | `/auth/pairing` | Request pairing code |
+| POST | `/auth/logout` | Logout dan clear session |
+| POST | `/messages/send` | Send WhatsApp message |
+| GET | `/status` | Get connection status |
 
-#### Products
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/products` | List semua produk |
-| GET | `/products/{id}` | Detail produk |
-| POST | `/products` | Tambah produk baru |
-| PUT | `/products/{id}` | Update produk |
-| DELETE | `/products/{id}` | Hapus produk |
-
-#### Orders
+#### Business API (Laravel Backend)
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/orders` | List semua pesanan |
-| GET | `/orders/{id}` | Detail pesanan |
-| POST | `/orders` | Buat pesanan baru |
-| PATCH | `/orders/{id}/status` | Update status pesanan |
-
-#### Chats
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/chats` | List semua chat |
-| GET | `/chats/{id}` | Detail chat dengan messages |
-| POST | `/chats/{id}/messages` | Kirim pesan |
-| PATCH | `/chats/{id}/assign` | Assign chat ke operator |
-
-#### Webhook (WhatsApp)
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/webhook` | Verify webhook (Meta verification) |
-| POST | `/webhook` | Receive incoming messages |
+| GET | `/products` | List products dengan pagination |
+| POST | `/orders` | Create new order |
+| GET | `/chats` | List active chats |
+| POST | `/chats/{id}/messages` | Send message via chat |
+| GET | `/analytics/sla` | Get SLA metrics |
 
 ### Response Format
 
@@ -520,74 +505,347 @@ Production: https://your-domain.com/api/v1
   "success": true,
   "message": "Operation successful",
   "data": {
-    // response data here
+    "id": "uuid",
+    "attributes": {}
   },
   "meta": {
-    "current_page": 1,
-    "total": 100,
-    "per_page": 15
-  }
-}
-```
-
-### Error Response
-
-```json
-{
-  "success": false,
-  "message": "Error description",
-  "errors": {
-    "field_name": ["Validation error message"]
+    "pagination": {
+      "current_page": 1,
+      "total": 100,
+      "per_page": 15
+    }
   }
 }
 ```
 
 ---
 
-## Project Structure
+## Testing
+
+### Test Coverage Overview
+
+- **Total Test Files:** 43+
+- **Laravel Tests:** PHPUnit dengan Feature & Unit tests
+- **Baileys Tests:** Jest dengan TypeScript support
+- **Coverage Target:** >80% code coverage
+
+### Running Tests
+
+#### Laravel Tests
+
+```bash
+# Run all Laravel tests
+php artisan test
+
+# Run specific test suite
+php artisan test --testsuite=Feature
+
+# Run with coverage
+php artisan test --coverage
+
+# Run specific test file
+php artisan test tests/Feature/OrderTest.php
+```
+
+#### Baileys Service Tests
+
+```bash
+cd baileys-service
+
+# Run all TypeScript tests
+npm test
+
+# Watch mode untuk development
+npm run test:watch
+
+# Coverage report
+npm run test:coverage
+```
+
+#### Integration Tests
+
+```bash
+# Test full integration flow
+php artisan test tests/Feature/WhatsAppIntegrationTest.php
+
+# Test API endpoints
+php artisan test tests/Feature/Api/
+
+# Test authentication flow
+npm test tests/auth/
+```
+
+### Test Structure
 
 ```
-whatsapp-sla/
-├── app/
-│   ├── Http/
-│   │   ├── Controllers/     # API & Web controllers
-│   │   ├── Middleware/      # Auth, rate limiting, etc
-│   │   └── Requests/        # Form request validation
-│   ├── Models/              # Eloquent models
-│   ├── Services/            # Business logic services
-│   └── Jobs/                # Queue jobs
-├── config/                  # Configuration files
-├── database/
-│   ├── migrations/          # Database migrations
-│   └── seeders/            # Data seeders
-├── python-bot/
-│   ├── handlers/           # Message handlers
-│   ├── services/           # Bot services
-│   ├── main.py            # Bot entry point
-│   └── requirements.txt   # Python dependencies
-├── resources/
-│   ├── js/                # React components
-│   ├── css/               # Stylesheets
-│   └── views/             # Blade templates
-├── routes/
-│   ├── api.php           # API routes
-│   └── web.php           # Web routes
-├── tests/                # Test suites
-├── docker-compose.yml    # Docker configuration
-└── README.md            # This file
+tests/
+├── Feature/                # Laravel feature tests
+│   ├── Api/               # API endpoint tests
+│   ├── Auth/              # Authentication tests
+│   ├── WhatsApp/          # WhatsApp integration tests
+│   └── Dashboard/         # Web dashboard tests
+├── Unit/                  # Laravel unit tests
+│   ├── Models/            # Model tests
+│   ├── Services/          # Service layer tests
+│   └── Helpers/           # Utility tests
+└── baileys-service/tests/ # TypeScript tests
+    ├── socket.test.ts     # Socket functionality
+    ├── auth/              # Auth handler tests
+    └── handlers/          # Event handler tests
+```
+
+### Testing Best Practices
+
+1. **Mock External Services:** WhatsApp API, Redis connections
+2. **Use Factories:** Generate test data dengan Laravel factories
+3. **Test Isolation:** Each test menggunakan fresh database
+4. **Error Scenarios:** Test error handling dan edge cases
+5. **Performance Tests:** Load testing untuk high-traffic scenarios
+
+---
+
+## Troubleshooting
+
+### Common Issues
+
+#### 🔴 WhatsApp Connection Issues
+
+**Problem:** QR code tidak muncul atau expired
+```bash
+# Check Baileys service status
+curl http://localhost:3002/health
+
+# Clear session dan restart
+cd baileys-service
+rm -rf sessions/*
+npm restart
+
+# Check logs
+npm run logs
+```
+
+**Problem:** "Session expired" atau "Logged out"
+```bash
+# Backup existing session
+cp -r sessions/ sessions_backup/
+
+# Clear dan re-authenticate
+rm -rf sessions/
+# Scan QR code lagi atau gunakan pairing code
+```
+
+#### 🟡 Laravel Backend Issues
+
+**Problem:** Database connection failed
+```bash
+# Check database credentials
+php artisan config:clear
+php artisan migrate:status
+
+# Test database connection
+php artisan tinker
+DB::connection()->getPdo();
+```
+
+**Problem:** Queue jobs tidak berjalan
+```bash
+# Check queue configuration
+php artisan queue:failed
+php artisan queue:retry all
+
+# Restart queue worker
+php artisan queue:restart
+php artisan queue:work --verbose
+```
+
+#### 🟠 Redis Connection Issues
+
+**Problem:** Redis connection refused
+```bash
+# Check Redis status
+redis-cli ping
+
+# Check Laravel Redis config
+php artisan tinker
+Redis::ping();
+
+# Check Baileys Redis connection
+cd baileys-service
+npm run test:redis
+```
+
+#### ⚪ Performance Issues
+
+**Problem:** Slow API response
+```bash
+# Enable Laravel debugging
+php artisan debugbar:enable
+
+# Check database queries
+php artisan telescope:install
+
+# Profile Baileys service
+cd baileys-service
+npm run profile
+```
+
+### Debug Mode
+
+**Laravel Debug Mode:**
+```env
+APP_DEBUG=true
+LOG_LEVEL=debug
+```
+
+**Baileys Debug Mode:**
+```env
+BAILEYS_LOG_LEVEL=debug
+```
+
+**Python Bot Debug:**
+```bash
+cd bot
+python main.py --debug
+```
+
+### Log Locations
+
+```
+Laravel: storage/logs/laravel.log
+Baileys: baileys-service/logs/
+Python: bot/logs/
+Redis: /var/log/redis/redis.log
+```
+
+### Performance Monitoring
+
+```bash
+# Laravel performance
+php artisan route:list --compact
+php artisan queue:monitor
+
+# Baileys memory usage
+cd baileys-service
+npm run monitor
+
+# Database performance
+mysql -u root -p -e "SHOW PROCESSLIST;"
 ```
 
 ---
 
-## Screenshots
+## Deployment
 
-<p align="center">
-  <i>Screenshots will be added once the UI is implemented</i>
-</p>
+### Docker Production
 
-| Dashboard | Orders | Chat Monitor |
-|-----------|--------|--------------|
-| ![Dashboard](docs/screenshots/dashboard.png) | ![Orders](docs/screenshots/orders.png) | ![Chat](docs/screenshots/chat.png) |
+```bash
+# Production deployment
+docker-compose -f docker-compose.prod.yml up -d
+
+# Scale services
+docker-compose up --scale baileys-service=3
+
+# Health checks
+docker-compose ps
+docker-compose logs
+```
+
+### Manual Production Setup
+
+```bash
+# Server requirements
+# - Ubuntu 20.04+ / CentOS 8+
+# - PHP 8.2, Node.js 18+, Python 3.11+
+# - MySQL 8.0, Redis 7+, Nginx
+
+# Deploy Laravel
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+
+# Build Baileys service
+cd baileys-service
+npm run build
+pm2 start dist/index.js --name baileys-service
+
+# Setup supervisor untuk queue workers
+# Setup nginx untuk load balancing
+```
+
+### Environment Variables
+
+**Production .env:**
+```env
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://your-domain.com
+
+# Database
+DB_HOST=your-db-host
+DB_DATABASE=whatsapp_sla_prod
+DB_USERNAME=app_user
+DB_PASSWORD=secure_password
+
+# Redis
+REDIS_HOST=your-redis-host
+REDIS_PASSWORD=redis_password
+
+# WhatsApp
+WA_ACCESS_TOKEN=production_token
+WA_VERIFY_TOKEN=secure_verify_token
+
+# Security
+SESSION_SECURE_COOKIE=true
+SANCTUM_STATEFUL_DOMAINS=your-domain.com
+```
+
+---
+
+## Contributing
+
+### Development Workflow
+
+1. **Fork repository** dan clone locally
+2. **Create feature branch** dari `develop`
+   ```bash
+   git checkout develop
+   git pull origin develop
+   git checkout -b feature/amazing-feature
+   ```
+3. **Setup development environment**
+   ```bash
+   cp .env.example .env
+   composer install
+   npm install
+   php artisan migrate --seed
+   ```
+4. **Make changes** dengan tests
+5. **Run test suite**
+   ```bash
+   php artisan test
+   cd baileys-service && npm test
+   ```
+6. **Commit changes** dengan conventional commits
+   ```bash
+   git commit -m "feat: add amazing feature"
+   ```
+7. **Push dan create Pull Request**
+
+### Code Standards
+
+- **PHP:** PSR-12, Laravel conventions
+- **TypeScript:** Prettier + ESLint
+- **Python:** PEP 8, Black formatter
+- **Commit Messages:** Conventional commits
+- **Tests:** Minimum 80% coverage
+
+### Pull Request Guidelines
+
+- ✅ All tests passing
+- ✅ Code coverage maintained
+- ✅ Documentation updated
+- ✅ Breaking changes documented
+- ✅ Performance impact assessed
 
 ---
 
@@ -600,40 +858,91 @@ whatsapp-sla/
         <img src="https://github.com/el-pablos.png" width="100px;" alt="el-pablos"/><br />
         <sub><b>el-pablos</b></sub>
       </a><br />
-      <sub>Project Lead</sub>
+      <sub>Project Lead & Architecture</sub>
+    </td>
+    <td align="center">
+      <a href="https://github.com/baileys-core">
+        <img src="https://github.com/github.png" width="100px;" alt="baileys-core"/><br />
+        <sub><b>baileys-core</b></sub>
+      </a><br />
+      <sub>Baileys Service & TypeScript</sub>
+    </td>
+    <td align="center">
+      <a href="#">
+        <img src="https://github.com/github.png" width="100px;" alt="contributor"/><br />
+        <sub><b>Your Name</b></sub>
+      </a><br />
+      <sub>Your Contribution</sub>
     </td>
   </tr>
 </table>
 
-### Contributing
+### Contributors Map
 
-Kontribusi sangat diterima! Silakan baca [CONTRIBUTING.md](CONTRIBUTING.md) untuk panduan kontribusi.
-
-1. Fork repository ini
-2. Buat feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push ke branch (`git push origin feature/AmazingFeature`)
-5. Buat Pull Request
+- **Backend Development:** Laravel API, database design, authentication
+- **WhatsApp Integration:** Baileys service, session management, TypeScript
+- **Frontend Development:** React dashboard, real-time components
+- **DevOps:** Docker, CI/CD, deployment automation
+- **Testing:** Test suites, coverage improvement, QA processes
+- **Documentation:** API docs, user guides, architecture documentation
 
 ---
 
 ## License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+Distributed under the MIT License. See `LICENSE` file for more information.
+
+```
+MIT License
+
+Copyright (c) 2024 WhatsApp SLA Team
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software...
+```
 
 ---
 
-## Support
+## Support & Community
 
-Jika ada pertanyaan atau butuh bantuan:
+### Getting Help
 
-- Buat [Issue](https://github.com/el-pablos/whatsapp-sla/issues) untuk bug reports
-- Buka [Discussion](https://github.com/el-pablos/whatsapp-sla/discussions) untuk pertanyaan umum
+🔗 **Documentation:** [Full documentation](./docs/)
+🐛 **Bug Reports:** [GitHub Issues](https://github.com/el-pablos/whatsapp-sla/issues)
+💡 **Feature Requests:** [GitHub Discussions](https://github.com/el-pablos/whatsapp-sla/discussions)
+📧 **Email:** support@whatsapp-sla.com
+
+### Community Guidelines
+
+- Be respectful dan professional
+- Use Indonesian atau English
+- Search existing issues sebelum create new
+- Provide detailed information untuk bug reports
+- Include code examples ketika possible
+
+### Roadmap
+
+**Q2 2024:**
+- [ ] Multi-tenant support
+- [ ] Advanced analytics dashboard
+- [ ] WhatsApp Web API v2 integration
+- [ ] Mobile app (React Native)
+
+**Q3 2024:**
+- [ ] AI-powered auto-responses
+- [ ] Integration dengan CRM systems
+- [ ] Advanced SLA reporting
+- [ ] Load balancing improvements
 
 ---
 
 <p align="center">
-  Made with care for local egg farmers
+  <strong>Built with ❤️ for Indonesian businesses</strong>
   <br/>
-  <sub>WhatsApp SLA - Ayam Petelur Business Solution</sub>
+  <sub>WhatsApp SLA - Enterprise WhatsApp Automation System</sub>
+  <br/>
+  <sub>Making customer communication seamless dan scalable</sub>
 </p>

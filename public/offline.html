@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="id" class="h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta name="theme-color" content="#075E54" />
+    <title>Offline - WhatsApp SLA</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      :root {
+        --wa-green: #075e54;
+        --wa-green-light: #128c7e;
+        --wa-teal: #25d366;
+        --wa-light-gray: #f0f2f5;
+        --wa-dark: #111b21;
+        --wa-text: #3b4a54;
+      }
+
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        background: linear-gradient(
+          135deg,
+          var(--wa-green) 0%,
+          var(--wa-green-light) 100%
+        );
+        color: var(--wa-text);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+      }
+
+      .offline-container {
+        background: white;
+        border-radius: 16px;
+        padding: 32px;
+        max-width: 400px;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        animation: slideUp 0.3s ease-out;
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .offline-icon {
+        width: 80px;
+        height: 80px;
+        background: var(--wa-light-gray);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 24px;
+      }
+
+      .offline-icon svg {
+        width: 40px;
+        height: 40px;
+        fill: var(--wa-text);
+      }
+
+      .offline-title {
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--wa-dark);
+        margin: 0 0 12px;
+      }
+
+      .offline-message {
+        font-size: 16px;
+        color: var(--wa-text);
+        margin: 0 0 24px;
+        line-height: 1.5;
+      }
+
+      .offline-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .btn {
+        width: 100%;
+        min-height: 48px;
+        padding: 14px 24px;
+        font-size: 16px;
+        font-weight: 600;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+
+      .btn:active {
+        transform: scale(0.98);
+      }
+
+      .btn-primary {
+        background: var(--wa-green);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: var(--wa-green-light);
+      }
+
+      .btn-secondary {
+        background: var(--wa-light-gray);
+        color: var(--wa-text);
+      }
+
+      .connection-status {
+        margin-top: 24px;
+        padding-top: 16px;
+        border-top: 1px solid var(--wa-light-gray);
+        font-size: 14px;
+        color: var(--wa-text);
+      }
+
+      .status-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #dc3545;
+      }
+
+      .status-dot.checking {
+        background: #ffc107;
+        animation: pulse 2s infinite;
+      }
+
+      .status-dot.online {
+        background: var(--wa-teal);
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .offline-container {
+          background: #202c33;
+        }
+        .offline-title {
+          color: #e9edef;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="offline-container">
+      <div class="offline-icon">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M23.64 7c-.45-.34-4.93-4-11.64-4-1.5 0-2.89.19-4.15.48L18.18 13.8 23.64 7zm-6.6 8.22L3.27 1.44 2 2.72l2.05 2.06C1.91 5.76.59 6.82.36 7l11.63 14.49.01.01.01-.01L16.17 16l1.98 1.98 1.27-1.27-1.38-1.49z"
+          />
+        </svg>
+      </div>
+
+      <h1 class="offline-title">Tidak Ada Koneksi</h1>
+      <p class="offline-message">
+        Anda sedang offline. Silakan periksa koneksi internet Anda dan coba
+        lagi.
+      </p>
+
+      <div class="offline-actions">
+        <button class="btn btn-primary" onclick="retryConnection()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"
+            />
+          </svg>
+          Coba Lagi
+        </button>
+
+        <a href="/" class="btn btn-secondary">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+          </svg>
+          Kembali ke Beranda
+        </a>
+      </div>
+
+      <div class="connection-status">
+        <div class="status-indicator">
+          <span class="status-dot" id="statusDot"></span>
+          <span id="statusText">Memeriksa koneksi...</span>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let isOnline = navigator.onLine;
+      let checkInterval;
+
+      function updateStatus() {
+        const dot = document.getElementById("statusDot");
+        const text = document.getElementById("statusText");
+
+        if (isOnline) {
+          dot.classList.remove("checking");
+          dot.classList.add("online");
+          text.textContent = "Online - Koneksi tersedia";
+
+          // Auto redirect setelah 2 detik jika online
+          setTimeout(() => {
+            window.location.href = "/whatsapp/auth";
+          }, 2000);
+        } else {
+          dot.classList.remove("online");
+          dot.classList.add("checking");
+          text.textContent = "Offline - Tidak ada koneksi";
+        }
+      }
+
+      function checkConnection() {
+        // Coba fetch ke endpoint yang ringan
+        fetch("/ping", {
+          method: "HEAD",
+          cache: "no-cache",
+        })
+          .then(() => {
+            if (!isOnline) {
+              isOnline = true;
+              updateStatus();
+            }
+          })
+          .catch(() => {
+            if (isOnline) {
+              isOnline = false;
+              updateStatus();
+            }
+          });
+      }
+
+      function retryConnection() {
+        const btn = document.querySelector(".btn-primary");
+        btn.textContent = "Memeriksa...";
+        btn.disabled = true;
+
+        checkConnection();
+
+        setTimeout(() => {
+          btn.innerHTML = `
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                    </svg>
+                    Coba Lagi
+                `;
+          btn.disabled = false;
+
+          if (isOnline) {
+            window.location.href = "/whatsapp/auth";
+          }
+        }, 2000);
+      }
+
+      // Event listeners untuk status online/offline
+      window.addEventListener("online", () => {
+        isOnline = true;
+        updateStatus();
+      });
+
+      window.addEventListener("offline", () => {
+        isOnline = false;
+        updateStatus();
+      });
+
+      // Check connection setiap 5 detik
+      checkInterval = setInterval(checkConnection, 5000);
+
+      // Initial status check
+      updateStatus();
+
+      // Cleanup saat page unload
+      window.addEventListener("beforeunload", () => {
+        if (checkInterval) {
+          clearInterval(checkInterval);
+        }
+      });
+    </script>
+  </body>
+</html>

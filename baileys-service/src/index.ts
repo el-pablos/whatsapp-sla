@@ -55,6 +55,20 @@ export type {
   ConnectionUpdate,
 } from "./types";
 
+// API Components
+export {
+  ApiServer,
+  createApiServer,
+  createHealthRoutes,
+  healthMiddleware,
+} from "./api";
+export type {
+  ApiServerConfig,
+  ApiServerInfo,
+  HealthMetrics,
+  ConnectionHealthStatus,
+} from "./api";
+
 // Re-export Baileys types yang sering digunakan
 export type { WASocket, AuthenticationState } from "@whiskeysockets/baileys";
 

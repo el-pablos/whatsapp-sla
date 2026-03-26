@@ -14,32 +14,36 @@ return [
     | Session Storage Path
     |--------------------------------------------------------------------------
     | Path untuk menyimpan session data Baileys
+    | Bisa absolute (dimulai dengan /) atau relative ke storage/
     */
-    'session_path' => env('BAILEYS_SESSION_PATH', storage_path('app/baileys-sessions')),
+    'session_path' => env('BAILEYS_SESSION_PATH', 'app/baileys-sessions'),
 
     /*
     |--------------------------------------------------------------------------
     | Auth State Path
     |--------------------------------------------------------------------------
     | Path untuk menyimpan auth state data
+    | Bisa absolute (dimulai dengan /) atau relative ke storage/
     */
-    'auth_state_path' => env('BAILEYS_AUTH_STATE_PATH', storage_path('app/baileys-auth')),
+    'auth_state_path' => env('BAILEYS_AUTH_STATE_PATH', 'app/baileys-auth'),
 
     /*
     |--------------------------------------------------------------------------
     | Media Storage Path
     |--------------------------------------------------------------------------
     | Path untuk temporary media files dari WhatsApp
+    | Bisa absolute (dimulai dengan /) atau relative ke storage/
     */
-    'media_path' => env('BAILEYS_MEDIA_PATH', storage_path('app/baileys-media')),
+    'media_path' => env('BAILEYS_MEDIA_PATH', 'app/baileys-media'),
 
     /*
     |--------------------------------------------------------------------------
     | Logs Path
     |--------------------------------------------------------------------------
     | Path untuk Baileys specific logs
+    | Bisa absolute (dimulai dengan /) atau relative ke storage/
     */
-    'logs_path' => env('BAILEYS_LOGS_PATH', storage_path('logs/baileys')),
+    'logs_path' => env('BAILEYS_LOGS_PATH', 'logs/baileys'),
 
     /*
     |--------------------------------------------------------------------------
@@ -68,7 +72,7 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Security Settings  
+    | Security Settings
     |--------------------------------------------------------------------------
     | Konfigurasi security untuk Baileys
     */
@@ -98,7 +102,7 @@ return [
     */
     'performance' => [
         'cache_messages' => env('BAILEYS_CACHE_MESSAGES', true),
-        'cache_contacts' => env('BAILEYS_CACHE_CONTACTS', true),  
+        'cache_contacts' => env('BAILEYS_CACHE_CONTACTS', true),
         'cache_group_metadata' => env('BAILEYS_CACHE_GROUPS', true),
         'max_cached_messages' => env('BAILEYS_MAX_CACHE_MESSAGES', 1000),
     ],

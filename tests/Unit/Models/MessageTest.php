@@ -21,7 +21,7 @@ describe('Message Model', function () {
 
     describe('fillable attributes', function () {
         it('has correct fillable fields', function () {
-            $message = new Message();
+            $message = new Message;
             $fillable = $message->getFillable();
 
             expect($fillable)->toContain('chat_id')

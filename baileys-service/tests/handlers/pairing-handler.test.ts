@@ -175,7 +175,7 @@ describe("PairingHandler", () => {
       const result = await handler.requestPairingCode("6281234567890");
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain("TypeError");
+      expect(result.error).toContain("is not a function");
     });
   });
 
@@ -286,7 +286,7 @@ describe("PairingHandler", () => {
   });
 
   describe("timeout handling", () => {
-    test("should emit expired event when timeout", async (done) => {
+    test("should emit expired event when timeout", async () => {
       const sock = createMockSocket();
       handler.setSocket(sock);
 
@@ -294,12 +294,16 @@ describe("PairingHandler", () => {
       // @ts-expect-error - Accessing private property for testing
       handler.PAIRING_TIMEOUT_MS = 100;
 
-      handler.on("pairing:expired", (data) => {
-        expect(data.phoneNumber).toBe("6281234567890");
-        done();
+      // Create promise to wait for event
+      const expiredPromise = new Promise<{ phoneNumber: string }>((resolve) => {
+        handler.on("pairing:expired", resolve);
       });
 
       await handler.requestPairingCode("6281234567890");
+
+      // Wait for expired event
+      const data = await expiredPromise;
+      expect(data.phoneNumber).toBe("6281234567890");
     });
   });
 

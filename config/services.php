@@ -134,6 +134,8 @@ return [
     */
     'bot' => [
         'api_token' => env('API_BOT_TOKEN'),
+        'internal_secret' => env('BOT_INTERNAL_SECRET', 'sla-bot-internal-secret-2024'),
+        'admin_phones' => explode(',', env('BOT_ADMIN_PHONES', '6281385427537')),
     ],
 
 ];

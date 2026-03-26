@@ -10,9 +10,14 @@ export interface DisconnectResult {
 }
 
 export function handleDisconnect(lastDisconnect: {
-  error?: Boom;
+  error?: Error | Boom;
+  date?: Date;
 }): DisconnectResult {
-  const reason = (lastDisconnect.error as Boom)?.output?.statusCode;
+  const error = lastDisconnect.error;
+  const reason =
+    error && "output" in error
+      ? (error as Boom)?.output?.statusCode
+      : undefined;
 
   switch (reason) {
     case DisconnectReason.loggedOut:

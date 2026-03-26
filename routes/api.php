@@ -7,7 +7,9 @@ use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\StockController;
+use App\Http\Controllers\Api\WhatsAppStatusController;
 use App\Http\Controllers\WebhookController;
+use App\Models\Product;
 use App\Services\BaileysService;
 use Illuminate\Support\Facades\Route;
 
@@ -68,15 +70,49 @@ Route::prefix('auth')->group(function () {
     });
 });
 
-// Baileys Auth API - requires authentication
-Route::prefix('baileys')->middleware('auth:sanctum')->group(function () {
-    Route::get('/status', [BaileysAuthController::class, 'status']);
-    Route::post('/qr/request', [BaileysAuthController::class, 'requestQR']);
-    Route::get('/qr', [BaileysAuthController::class, 'getQR']);
-    Route::post('/pairing', [BaileysAuthController::class, 'requestPairing']);
-    Route::post('/logout', [BaileysAuthController::class, 'logout']);
-    Route::post('/restart', [BaileysAuthController::class, 'restart']);
-    Route::get('/metrics', [BaileysAuthController::class, 'metrics']);
+// Baileys Auth API - disabled until controller is created
+// Route::prefix('baileys')->middleware('auth:sanctum')->group(function () {
+//     Route::get('/status', [BaileysAuthController::class, 'status']);
+//     Route::post('/qr/request', [BaileysAuthController::class, 'requestQR']);
+//     Route::get('/qr', [BaileysAuthController::class, 'getQR']);
+//     Route::post('/pairing', [BaileysAuthController::class, 'requestPairing']);
+//     Route::post('/logout', [BaileysAuthController::class, 'logout']);
+//     Route::post('/restart', [BaileysAuthController::class, 'restart']);
+//     Route::get('/metrics', [BaileysAuthController::class, 'metrics']);
+// });
+
+// ============================================================
+// INTERNAL BOT API - untuk WhatsApp bot query data
+// Dilindungi dengan BOT_SECRET header
+// ============================================================
+Route::prefix('bot')->middleware('bot.internal')->group(function () {
+    // Products - read only untuk bot
+    Route::get('/products', [ProductController::class, 'index']);
+    Route::get('/products/{id}', [ProductController::class, 'show']);
+    Route::get('/products/search/{keyword}', function (string $keyword) {
+        $products = Product::where('status', 'active')
+            ->where(function ($q) use ($keyword) {
+                $q->where('name', 'like', "%{$keyword}%")
+                    ->orWhere('type', 'like', "%{$keyword}%");
+            })
+            ->get();
+
+        return response()->json(['success' => true, 'data' => $products]);
+    });
+
+    // Orders
+    Route::get('/orders', [OrderController::class, 'index']);
+    Route::post('/orders', [OrderController::class, 'store']);
+
+    // Chats - untuk tracking
+    Route::post('/chats', [ChatController::class, 'store']);
+    Route::post('/messages', [MessageController::class, 'store']);
+
+    // Admin operations (protected by admin phone check in bot)
+    Route::post('/admin/products', [ProductController::class, 'store']);
+    Route::put('/admin/products/{id}', [ProductController::class, 'update']);
+    Route::patch('/admin/products/{id}/stock', [ProductController::class, 'updateStock']);
+    Route::delete('/admin/products/{id}', [ProductController::class, 'destroy']);
 });
 
 // Protected routes - requires API token

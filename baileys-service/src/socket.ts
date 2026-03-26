@@ -301,19 +301,12 @@ function setupEventHandlers(
     // Silent, terlalu banyak event
   });
 
-  // Event: chats set (initial chats load)
-  socket.ev.on("chats.set", ({ chats }) => {
-    console.log(`[Socket] Loaded ${chats.length} chats`);
-  });
-
-  // Event: messages set (initial messages load)
-  socket.ev.on("messages.set", ({ messages }) => {
-    console.log(`[Socket] Loaded ${messages.length} messages`);
-  });
-
-  // Event: contacts set
-  socket.ev.on("contacts.set", ({ contacts }) => {
-    console.log(`[Socket] Loaded ${contacts.length} contacts`);
+  // Event: messaging history set (initial load) - Baileys 6.x
+  socket.ev.on("messaging-history.set", (data) => {
+    const { chats, contacts, messages } = data;
+    console.log(
+      `[Socket] History loaded: ${chats?.length || 0} chats, ${contacts?.length || 0} contacts, ${messages?.length || 0} messages`,
+    );
   });
 }
 

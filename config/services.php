@@ -97,19 +97,6 @@ return [
     |--------------------------------------------------------------------------
     | Referensi ke config/whatsapp.php untuk detail lengkap
     */
-    'whatsapp' => [
-        'api_url' => env('WA_API_URL', 'https://graph.facebook.com/v18.0'),
-        'phone_number_id' => env('WA_PHONE_NUMBER_ID'),
-        'access_token' => env('WA_ACCESS_TOKEN'),
-        'verify_token' => env('WA_VERIFY_TOKEN'),
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | GitHub API
-    |--------------------------------------------------------------------------
-    | Untuk CI/CD dan integrasi GitHub
-    */
     'github' => [
         'token' => env('GITHUB_TOKEN'),
         'owner' => env('GITHUB_OWNER'),

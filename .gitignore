@@ -1,12 +1,16 @@
 # Laravel
 /.phpunit.cache
 /bootstrap/ssr
+/bootstrap/cache/
 /node_modules
 /public/build
 /public/hot
 /public/storage
 /storage/*.key
 /storage/pail
+/storage/framework/views/
+/storage/framework/cache/
+/storage/framework/sessions/
 /vendor
 
 # Environment files - NEVER commit these!
@@ -71,7 +75,11 @@ cookies.txt
 # WhatsApp Baileys Sessions - NEVER COMMIT!
 sessions/
 wa-sessions/
+baileys-session/
+baileys-auth/
+whatsapp-session/
 auth_info*/
+storage/app/whatsapp-sessions/
 **/creds.json
 **/pre-key*.json
 **/sender-key*.json

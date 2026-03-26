@@ -109,4 +109,21 @@ return [
         'sync_interval_minutes' => env('WA_CATALOG_SYNC_INTERVAL', 60),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Baileys Integration Settings
+    |--------------------------------------------------------------------------
+    | Konfigurasi untuk integrasi dengan Baileys (Node.js WhatsApp Web client)
+    */
+    'baileys' => [
+        'enabled' => env('BAILEYS_ENABLED', false),
+        'api_url' => env('BAILEYS_API_URL', 'http://localhost:3001'),
+        'timeout' => env('BAILEYS_TIMEOUT', 30), // detik
+        'session_path' => env('BAILEYS_SESSION_PATH', storage_path('app/baileys-sessions')),
+        'auth_state_path' => env('BAILEYS_AUTH_STATE_PATH', storage_path('app/baileys-auth')),
+        'qr_timeout' => env('BAILEYS_QR_TIMEOUT', 60), // detik
+        'retry_attempts' => env('BAILEYS_RETRY_ATTEMPTS', 3),
+        'webhook_secret' => env('BAILEYS_WEBHOOK_SECRET', 'baileys_secret_2024'),
+    ],
+
 ];

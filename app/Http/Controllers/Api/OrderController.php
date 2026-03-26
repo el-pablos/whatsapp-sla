@@ -5,11 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OrderRequest;
 use App\Http\Requests\UpdateOrderStatusRequest;
-use App\Http\Resources\OrderCollection;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
 use App\Models\OrderItem;
-use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -29,7 +27,7 @@ class OrderController extends Controller
             ->when($request->query('search'), function ($q, $search) {
                 $q->where(function ($query) use ($search) {
                     $query->where('customer_name', 'LIKE', "%{$search}%")
-                          ->orWhere('customer_phone', 'LIKE', "%{$search}%");
+                        ->orWhere('customer_phone', 'LIKE', "%{$search}%");
                 });
             })
             ->when($request->query('date_from'), fn ($q, $date) => $q->whereDate('created_at', '>=', $date))
@@ -119,6 +117,7 @@ class OrderController extends Controller
             ], 201);
         } catch (\Exception $e) {
             report($e);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal membuat order',
@@ -150,6 +149,32 @@ class OrderController extends Controller
             'success' => true,
             'message' => 'Status order berhasil diupdate',
             'data' => new OrderResource($order),
+        ]);
+    }
+
+    /**
+     * Ambil orders berdasarkan nomor telepon customer
+     * Endpoint: GET /api/bot/orders/customer/{phone}
+     */
+    public function byCustomerPhone(string $phone): JsonResponse
+    {
+        // Normalisasi format phone (hapus karakter non-numeric)
+        $phone = preg_replace('/[^0-9]/', '', $phone);
+
+        $orders = Order::query()
+            ->where('customer_phone', 'LIKE', "%{$phone}%")
+            ->with('items.product')
+            ->orderByDesc('created_at')
+            ->limit(10) // Batasi 10 order terakhir
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => OrderResource::collection($orders),
+            'meta' => [
+                'total' => $orders->count(),
+                'phone' => $phone,
+            ],
         ]);
     }
 

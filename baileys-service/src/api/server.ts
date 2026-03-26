@@ -11,6 +11,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 import type { ConnectionManager } from "../core/connection-manager";
 import { createHealthRoutes, healthMiddleware } from "./health";
+import { createBroadcastRoutes } from "./broadcast";
 import { loadConfig } from "../config";
 
 export interface ApiServerConfig {
@@ -136,12 +137,18 @@ export class ApiServer {
           ready: "/health/ready",
           connection: "/health/connection",
           metrics: "/health/metrics",
+          broadcast: "/broadcast",
+          broadcast_single: "/broadcast/single",
+          broadcast_status: "/broadcast/status",
         },
       });
     });
 
     // Mount health routes
     this.app.use("/health", createHealthRoutes(this.connectionManager));
+
+    // Mount broadcast routes
+    this.app.use("/broadcast", createBroadcastRoutes(this.connectionManager));
 
     // API info endpoint
     this.app.get("/info", async (req, res) => {

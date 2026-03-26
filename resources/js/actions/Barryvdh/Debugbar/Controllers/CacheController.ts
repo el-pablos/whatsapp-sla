@@ -1,9 +1,9 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults, validateParameters } from './../../../../wayfinder'
 /**
 * @see \Barryvdh\Debugbar\Controllers\CacheController::deleteMethod
- * @see vendor/barryvdh/laravel-debugbar/src/Controllers/CacheController.php:13
- * @route '/_debugbar/cache/{key}/{tags?}'
- */
+* @see vendor/barryvdh/laravel-debugbar/src/Controllers/CacheController.php:13
+* @route '/_debugbar/cache/{key}/{tags?}'
+*/
 export const deleteMethod = (args: { key: string | number, tags?: string | number } | [key: string | number, tags: string | number ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: deleteMethod.url(args, options),
     method: 'delete',
@@ -16,27 +16,27 @@ deleteMethod.definition = {
 
 /**
 * @see \Barryvdh\Debugbar\Controllers\CacheController::deleteMethod
- * @see vendor/barryvdh/laravel-debugbar/src/Controllers/CacheController.php:13
- * @route '/_debugbar/cache/{key}/{tags?}'
- */
+* @see vendor/barryvdh/laravel-debugbar/src/Controllers/CacheController.php:13
+* @route '/_debugbar/cache/{key}/{tags?}'
+*/
 deleteMethod.url = (args: { key: string | number, tags?: string | number } | [key: string | number, tags: string | number ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
         args = {
-                    key: args[0],
-                    tags: args[1],
-                }
+            key: args[0],
+            tags: args[1],
+        }
     }
 
     args = applyUrlDefaults(args)
 
     validateParameters(args, [
-            "tags",
-        ])
+        "tags",
+    ])
 
     const parsedArgs = {
-                        key: args.key,
-                                tags: args.tags,
-                }
+        key: args.key,
+        tags: args.tags,
+    }
 
     return deleteMethod.definition.url
             .replace('{key}', parsedArgs.key.toString())
@@ -46,45 +46,46 @@ deleteMethod.url = (args: { key: string | number, tags?: string | number } | [ke
 
 /**
 * @see \Barryvdh\Debugbar\Controllers\CacheController::deleteMethod
- * @see vendor/barryvdh/laravel-debugbar/src/Controllers/CacheController.php:13
- * @route '/_debugbar/cache/{key}/{tags?}'
- */
+* @see vendor/barryvdh/laravel-debugbar/src/Controllers/CacheController.php:13
+* @route '/_debugbar/cache/{key}/{tags?}'
+*/
 deleteMethod.delete = (args: { key: string | number, tags?: string | number } | [key: string | number, tags: string | number ], options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
     url: deleteMethod.url(args, options),
     method: 'delete',
 })
 
-    /**
+/**
 * @see \Barryvdh\Debugbar\Controllers\CacheController::deleteMethod
- * @see vendor/barryvdh/laravel-debugbar/src/Controllers/CacheController.php:13
- * @route '/_debugbar/cache/{key}/{tags?}'
- */
-    const deleteMethodForm = (args: { key: string | number, tags?: string | number } | [key: string | number, tags: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-        action: deleteMethod.url(args, {
-                    [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-                        _method: 'DELETE',
-                        ...(options?.query ?? options?.mergeQuery ?? {}),
-                    }
-                }),
-        method: 'post',
-    })
+* @see vendor/barryvdh/laravel-debugbar/src/Controllers/CacheController.php:13
+* @route '/_debugbar/cache/{key}/{tags?}'
+*/
+const deleteMethodForm = (args: { key: string | number, tags?: string | number } | [key: string | number, tags: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: deleteMethod.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'DELETE',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
 
-            /**
+/**
 * @see \Barryvdh\Debugbar\Controllers\CacheController::deleteMethod
- * @see vendor/barryvdh/laravel-debugbar/src/Controllers/CacheController.php:13
- * @route '/_debugbar/cache/{key}/{tags?}'
- */
-        deleteMethodForm.delete = (args: { key: string | number, tags?: string | number } | [key: string | number, tags: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
-            action: deleteMethod.url(args, {
-                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-                            _method: 'DELETE',
-                            ...(options?.query ?? options?.mergeQuery ?? {}),
-                        }
-                    }),
-            method: 'post',
-        })
-    
-    deleteMethod.form = deleteMethodForm
+* @see vendor/barryvdh/laravel-debugbar/src/Controllers/CacheController.php:13
+* @route '/_debugbar/cache/{key}/{tags?}'
+*/
+deleteMethodForm.delete = (args: { key: string | number, tags?: string | number } | [key: string | number, tags: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: deleteMethod.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'DELETE',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'post',
+})
+
+deleteMethod.form = deleteMethodForm
+
 const CacheController = { deleteMethod, delete: deleteMethod }
 
 export default CacheController

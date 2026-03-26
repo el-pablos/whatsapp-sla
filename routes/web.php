@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\BaileysAuthController;
+use App\Http\Controllers\BroadcastController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DashboardController;
@@ -43,6 +44,14 @@ Route::middleware('auth')->group(function () {
     Route::resource('chats', ChatController::class);
     Route::post('chats/{chat}/takeover', [ChatController::class, 'takeover'])->name('chats.takeover');
     Route::post('chats/{chat}/resolve', [ChatController::class, 'resolve'])->name('chats.resolve');
+
+    // Broadcast Routes - untuk kirim pesan massal
+    Route::prefix('broadcast')->name('broadcast.')->group(function () {
+        Route::get('/customers', [BroadcastController::class, 'customers'])->name('customers');
+        Route::post('/', [BroadcastController::class, 'send'])->name('send');
+        Route::get('/{id}/status', [BroadcastController::class, 'status'])->name('status');
+        Route::get('/history', [BroadcastController::class, 'history'])->name('history');
+    });
 
     // Baileys Auth Routes
     Route::prefix('whatsapp')->name('baileys.')->group(function () {

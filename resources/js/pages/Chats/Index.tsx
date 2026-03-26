@@ -1,72 +1,71 @@
-import { useState, useCallback, useEffect } from 'react'
-import { Head, usePage } from '@inertiajs/react'
-import { cn } from '@/lib/utils'
-import type { Chat, ChatStatus, Message } from '@/types/chat'
-import { ChatList } from './ChatList'
-import { ChatDetail } from './ChatDetail'
+import { useState, useCallback, useEffect } from "react";
+import { Head, usePage } from "@inertiajs/react";
+import { cn } from "@/lib/utils";
+import type { Chat, ChatStatus, Message } from "@/types/chat";
+import { ChatList } from "./ChatList";
+import { ChatDetail } from "./ChatDetail";
+import { BroadcastModal } from "./BroadcastModal";
 
 interface PageProps {
   chats: {
-    data: Chat[]
-  }
+    data: Chat[];
+  };
   filters: {
-    status: string
-    search: string
-  }
+    status: string;
+    search: string;
+  };
 }
 
 export default function ChatsIndex() {
-  const { chats: initialChats, filters } = usePage<PageProps>().props
+  const { chats: initialChats, filters } = usePage<PageProps>().props;
 
-  const [statusFilter, setStatusFilter] = useState<ChatStatus | 'all'>(
-    (filters?.status as ChatStatus | 'all') || 'all'
-  )
-  const [chats, setChats] = useState<Chat[]>(initialChats?.data || [])
-  const [selectedChat, setSelectedChat] = useState<Chat | null>(null)
-  const [showDetail, setShowDetail] = useState(false)
-  const [messages, setMessages] = useState<Message[]>([])
-  const [isLoadingMessages, setIsLoadingMessages] = useState(false)
+  const [statusFilter, setStatusFilter] = useState<ChatStatus | "all">(
+    (filters?.status as ChatStatus | "all") || "all",
+  );
+  const [chats, setChats] = useState<Chat[]>(initialChats?.data || []);
+  const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
+  const [showDetail, setShowDetail] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  const [showBroadcastModal, setShowBroadcastModal] = useState(false);
 
   // Update chats when initial props change
   useEffect(() => {
     if (initialChats?.data) {
-      setChats(initialChats.data)
+      setChats(initialChats.data);
     }
-  }, [initialChats])
+  }, [initialChats]);
 
   const handleSelectChat = useCallback((chat: Chat) => {
-    setSelectedChat(chat)
-    setShowDetail(true)
+    setSelectedChat(chat);
+    setShowDetail(true);
     // Load messages for this chat
-    setIsLoadingMessages(true)
+    setIsLoadingMessages(true);
     // Simulated - in production, fetch from API with auth
-    setMessages(chat.messages || [])
-    setIsLoadingMessages(false)
-  }, [])
+    setMessages(chat.messages || []);
+    setIsLoadingMessages(false);
+  }, []);
 
   const handleBack = useCallback(() => {
-    setShowDetail(false)
-  }, [])
+    setShowDetail(false);
+  }, []);
 
-  const handleSendMessage = useCallback(
-    async (content: string) => {
-      // In production, this would call the API
-      console.log('Sending message:', content)
-    },
-    []
-  )
+  const handleSendMessage = useCallback(async (content: string) => {
+    // In production, this would call the API
+    console.log("Sending message:", content);
+  }, []);
 
   const handleTakeover = useCallback(async () => {
     // In production, this would call the API
-    console.log('Taking over chat')
-  }, [])
+    console.log("Taking over chat");
+  }, []);
 
   const handleResolve = useCallback(async () => {
     // In production, this would call the API
-    console.log('Resolving chat')
-    setShowDetail(false)
-    setSelectedChat(null)
-  }, [])
+    console.log("Resolving chat");
+    setShowDetail(false);
+    setSelectedChat(null);
+  }, []);
 
   return (
     <>
@@ -76,8 +75,8 @@ export default function ChatsIndex() {
         {/* Chat List - Hidden on mobile when detail is shown */}
         <div
           className={cn(
-            'w-full flex-shrink-0 md:w-80 lg:w-96',
-            showDetail ? 'hidden md:block' : 'block'
+            "w-full flex-shrink-0 md:w-80 lg:w-96",
+            showDetail ? "hidden md:block" : "block",
           )}
         >
           <ChatList
@@ -87,16 +86,12 @@ export default function ChatsIndex() {
             isLoading={false}
             statusFilter={statusFilter}
             onStatusFilterChange={setStatusFilter}
+            onBroadcastClick={() => setShowBroadcastModal(true)}
           />
         </div>
 
         {/* Chat Detail - Full screen on mobile when shown */}
-        <div
-          className={cn(
-            'flex-1',
-            !showDetail ? 'hidden md:flex' : 'flex'
-          )}
-        >
+        <div className={cn("flex-1", !showDetail ? "hidden md:flex" : "flex")}>
           <div className="w-full">
             <ChatDetail
               chat={selectedChat}
@@ -110,6 +105,12 @@ export default function ChatsIndex() {
           </div>
         </div>
       </div>
+
+      {/* Broadcast Modal */}
+      <BroadcastModal
+        isOpen={showBroadcastModal}
+        onClose={() => setShowBroadcastModal(false)}
+      />
     </>
-  )
+  );
 }

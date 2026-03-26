@@ -99,3 +99,7 @@ Thumbs.db
 # Claude Code Memory (project-specific, don't commit)
 CLAUDE.md
 **/CLAUDE.md
+backup-files/
+baileys-service/coverage/
+fixed-files/
+storage/app/baileys-sessions/

@@ -9,6 +9,7 @@
     "dev": "ts-node src/demo.ts",
     "start": "node dist/startup.js",
     "start:dev": "ts-node src/startup.ts",
+    "bot": "ts-node --transpile-only src/bot.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "eslint src --ext .ts",

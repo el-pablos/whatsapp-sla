@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BroadcastController;
 use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\Api\ChatController;
 use App\Http\Controllers\Api\MessageController;
@@ -102,6 +103,8 @@ Route::prefix('bot')->middleware('bot.internal')->group(function () {
 
     // Orders
     Route::get('/orders', [OrderController::class, 'index']);
+    Route::get('/orders/{id}', [OrderController::class, 'show']);
+    Route::get('/orders/customer/{phone}', [OrderController::class, 'byCustomerPhone']);
     Route::post('/orders', [OrderController::class, 'store']);
 
     // Chats - untuk tracking
@@ -165,4 +168,12 @@ Route::middleware(['api.token', 'throttle:api'])->group(function () {
     Route::get('/catalogs', [CatalogController::class, 'index']);
     Route::get('/catalogs/{id}', [CatalogController::class, 'show']);
     Route::post('/catalogs', [CatalogController::class, 'store']);
+
+    // Broadcast - untuk kirim pesan massal ke customers
+    Route::prefix('broadcast')->group(function () {
+        Route::get('/customers', [BroadcastController::class, 'customers']);
+        Route::post('/', [BroadcastController::class, 'send']);
+        Route::get('/{id}/status', [BroadcastController::class, 'status']);
+        Route::get('/history', [BroadcastController::class, 'history']);
+    });
 });

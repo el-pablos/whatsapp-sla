@@ -21,11 +21,14 @@ import { Boom } from "@hapi/boom";
 import pino from "pino";
 import fs from "fs";
 import path from "path";
+import express, { Request, Response } from "express";
+import cors from "cors";
 
 // ==================== CONFIGURATION ====================
 const SESSION_PATH = path.join(__dirname, "..", "sessions", "main");
 const MAX_RETRIES = 5;
 const RETRY_DELAY_MS = 5000;
+const HTTP_PORT = parseInt(process.env.BOT_HTTP_PORT || "3002");
 
 // Laravel API Configuration
 const LARAVEL_API_URL = process.env.LARAVEL_API_URL || "http://127.0.0.1:8000";
@@ -57,6 +60,7 @@ interface Product {
   stock: number;
   unit: string;
   status: string;
+  image: string | null;
 }
 
 interface Chat {
@@ -73,6 +77,26 @@ interface Order {
   customer_name: string;
   total: number;
   status: string;
+  notes?: string;
+  created_at?: string;
+  items?: OrderItem[];
+  customer?: {
+    phone: string;
+    name: string;
+  };
+  pricing?: {
+    total: number;
+    formatted_total: string;
+  };
+}
+
+interface OrderItem {
+  id: number;
+  product_id?: number;
+  product_name?: string;
+  quantity: number;
+  price: number;
+  subtotal: number;
 }
 
 async function apiCall<T>(
@@ -199,6 +223,24 @@ async function createOrder(
   });
 }
 
+/**
+ * Ambil daftar order berdasarkan nomor telepon customer
+ */
+async function getCustomerOrders(phone: string): Promise<Order[]> {
+  const result = await apiCall<Order[]>(
+    `/orders/customer/${encodeURIComponent(phone)}`,
+  );
+  return result.success ? result.data || [] : [];
+}
+
+/**
+ * Ambil detail order berdasarkan ID
+ */
+async function getOrderDetail(orderId: number): Promise<Order | null> {
+  const result = await apiCall<Order>(`/orders/${orderId}`);
+  return result.success ? result.data || null : null;
+}
+
 // ==================== FORMAT HELPERS ====================
 function formatPrice(price: number): string {
   return new Intl.NumberFormat("id-ID", {
@@ -226,11 +268,271 @@ function formatProductList(products: Product[]): string {
   return text;
 }
 
+/**
+ * Mapping status order ke emoji dan label
+ */
+function getStatusDisplay(status: string): string {
+  const statusMap: Record<string, string> = {
+    pending: "⏳ Menunggu",
+    confirmed: "✔️ Dikonfirmasi",
+    processing: "🔄 Diproses",
+    completed: "✅ Selesai",
+    cancelled: "❌ Dibatalkan",
+  };
+  return statusMap[status] || `📋 ${status}`;
+}
+
+/**
+ * Format tanggal untuk tampilan
+ */
+function formatDate(dateStr: string | undefined): string {
+  if (!dateStr) return "-";
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+/**
+ * Format tanggal dengan waktu untuk tampilan detail
+ */
+function formatDateTime(dateStr: string | undefined): string {
+  if (!dateStr) return "-";
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+/**
+ * Format daftar pesanan customer
+ */
+function formatOrderList(orders: Order[]): string {
+  if (orders.length === 0) {
+    return '📦 *PESANAN ANDA*\n\n_Belum ada pesanan._\n\nKetik "menu" untuk mulai belanja!';
+  }
+
+  let text = "📦 *PESANAN ANDA*\n\n";
+
+  orders.forEach((order) => {
+    const orderId = order.id;
+    const date = formatDate(order.created_at);
+    const status = getStatusDisplay(order.status);
+
+    // Format items summary
+    let itemsSummary = "";
+    if (order.items && order.items.length > 0) {
+      itemsSummary = order.items
+        .map((item) => `${item.product_name || "Produk"} ${item.quantity}`)
+        .join(", ");
+    }
+
+    // Total dari pricing atau total langsung
+    const total = order.pricing?.formatted_total || formatPrice(order.total);
+
+    text += `#${orderId} - ${date}\n`;
+    text += `├ ${itemsSummary || "Item pesanan"}\n`;
+    text += `├ Total: ${total}\n`;
+    text += `└ Status: ${status}\n\n`;
+  });
+
+  text += `_Ketik "status [nomor]" untuk detail_`;
+  return text;
+}
+
+/**
+ * Format detail pesanan
+ */
+function formatOrderDetail(order: Order): string {
+  const orderId = order.id;
+  const dateTime = formatDateTime(order.created_at);
+  const status = getStatusDisplay(order.status);
+
+  // Customer info
+  const customerName = order.customer?.name || order.customer_name || "-";
+  const customerPhone = order.customer?.phone || order.customer_phone || "-";
+
+  // Total
+  const total = order.pricing?.formatted_total || formatPrice(order.total);
+
+  let text = `📦 *DETAIL PESANAN #${orderId}*\n\n`;
+  text += `📅 Tanggal: ${dateTime}\n`;
+  text += `👤 Nama: ${customerName}\n`;
+  text += `📱 Phone: ${customerPhone}\n\n`;
+
+  // Items
+  text += `📝 Items:\n`;
+  if (order.items && order.items.length > 0) {
+    order.items.forEach((item) => {
+      const productName = item.product_name || "Produk";
+      const qty = item.quantity;
+      const subtotal = formatPrice(item.subtotal);
+      text += `• ${productName} x ${qty} = ${subtotal}\n`;
+    });
+  } else {
+    text += `• _Data item tidak tersedia_\n`;
+  }
+
+  text += `\n💵 Total: ${total}\n`;
+  text += `📊 Status: ${status}\n\n`;
+  text += `_Admin akan menghubungi Anda_`;
+
+  return text;
+}
+
 function isAdmin(phone: string): boolean {
   const cleanPhone = phone.replace(/[^0-9]/g, "");
   return ADMIN_PHONES.some((adminPhone) =>
     cleanPhone.includes(adminPhone.replace(/[^0-9]/g, "")),
   );
+}
+
+// ==================== IMAGE MESSAGE FUNCTIONS ====================
+
+/**
+ * Kirim gambar dengan caption ke WhatsApp
+ * @param socket - Baileys socket instance
+ * @param jid - WhatsApp JID tujuan
+ * @param imageUrl - URL gambar atau path file lokal
+ * @param caption - Caption untuk gambar (optional)
+ */
+async function sendImageMessage(
+  socket: WASocket,
+  jid: string,
+  imageUrl: string,
+  caption?: string,
+): Promise<proto.WebMessageInfo | undefined> {
+  try {
+    // Cek apakah image adalah URL atau local file
+    const isUrl =
+      imageUrl.startsWith("http://") || imageUrl.startsWith("https://");
+
+    if (isUrl) {
+      // Kirim dari URL
+      return await socket.sendMessage(jid, {
+        image: { url: imageUrl },
+        caption: caption || "",
+      });
+    } else {
+      // Kirim dari local file - cek file exists
+      if (!fs.existsSync(imageUrl)) {
+        console.error(`❌ File gambar tidak ditemukan: ${imageUrl}`);
+        return undefined;
+      }
+      return await socket.sendMessage(jid, {
+        image: fs.readFileSync(imageUrl),
+        caption: caption || "",
+      });
+    }
+  } catch (error) {
+    console.error("❌ Gagal kirim gambar:", error);
+    return undefined;
+  }
+}
+
+/**
+ * Kirim gambar produk dengan caption detail
+ * Fallback ke text jika tidak ada gambar
+ */
+async function sendProductImage(
+  socket: WASocket,
+  jid: string,
+  product: Product,
+): Promise<proto.WebMessageInfo | undefined> {
+  // Format caption untuk produk
+  const stockStatus =
+    product.stock > 0
+      ? `✅ Stok: ${product.stock} ${product.unit}`
+      : "❌ Stok Habis";
+
+  const caption =
+    `📦 *${product.name.toUpperCase()}*\n\n` +
+    `💰 Harga: ${formatPrice(product.price)}/${product.unit}\n` +
+    `📊 ${stockStatus}\n` +
+    `📝 Tipe: ${product.type}\n\n` +
+    `_Ketik "pesan ${product.name} [jumlah]" untuk order_`;
+
+  // Jika tidak ada gambar, fallback ke text
+  if (!product.image) {
+    console.log(
+      `⚠️ Produk ${product.name} tidak punya gambar, kirim text saja`,
+    );
+    return await socket.sendMessage(jid, { text: caption });
+  }
+
+  // Kirim gambar dengan caption
+  const result = await sendImageMessage(socket, jid, product.image, caption);
+
+  // Jika gagal kirim gambar, fallback ke text
+  if (!result) {
+    console.log(`⚠️ Gagal kirim gambar ${product.name}, fallback ke text`);
+    return await socket.sendMessage(jid, { text: caption });
+  }
+
+  return result;
+}
+
+/**
+ * Kirim katalog dengan gambar (multiple produk)
+ * @param maxImages - maksimal jumlah gambar yang dikirim (default 5)
+ */
+async function sendCatalogWithImages(
+  socket: WASocket,
+  jid: string,
+  products: Product[],
+  maxImages: number = 5,
+): Promise<void> {
+  if (products.length === 0) {
+    await socket.sendMessage(jid, {
+      text: "❌ Tidak ada produk tersedia saat ini.",
+    });
+    return;
+  }
+
+  // Kirim header
+  await socket.sendMessage(jid, {
+    text:
+      `📸 *KATALOG PRODUK DENGAN GAMBAR*\n\n` +
+      `Menampilkan ${Math.min(products.length, maxImages)} produk:\n`,
+  });
+
+  // Filter produk yang punya gambar, limit ke maxImages
+  const productsWithImages = products
+    .filter((p) => p.image)
+    .slice(0, maxImages);
+  const productsWithoutImages = products.filter((p) => !p.image);
+
+  // Kirim gambar untuk setiap produk (dengan delay kecil untuk menghindari rate limit)
+  for (let i = 0; i < productsWithImages.length; i++) {
+    const product = productsWithImages[i];
+    await sendProductImage(socket, jid, product);
+    // Delay kecil antar gambar untuk menghindari rate limit
+    if (i < productsWithImages.length - 1) {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+  }
+
+  // Jika ada produk tanpa gambar, tampilkan sebagai text
+  if (productsWithoutImages.length > 0) {
+    let textList = `\n📋 *PRODUK LAINNYA (tanpa gambar):*\n\n`;
+    productsWithoutImages.forEach((p, idx) => {
+      const stockStatus = p.stock > 0 ? `✅ ${p.stock} ${p.unit}` : "❌ Habis";
+      textList += `${idx + 1}. *${p.name}*\n`;
+      textList += `   💰 ${formatPrice(p.price)}/${p.unit} | ${stockStatus}\n\n`;
+    });
+    await socket.sendMessage(jid, { text: textList });
+  }
+
+  // Kirim footer
+  await socket.sendMessage(jid, {
+    text: `━━━━━━━━━━━━━━━━━━━━━━\n📝 Ketik "pesan [produk] [jumlah]" untuk order`,
+  });
 }
 
 // ==================== MESSAGE HANDLER ====================
@@ -392,6 +694,38 @@ async function handleMessage(socket: WASocket, message: proto.IWebMessageInfo) {
         const products = await getProducts();
         response = formatProductList(products);
       }
+      // Foto produk: foto [nama produk]
+      else if (
+        lowerText.startsWith("foto ") ||
+        lowerText.startsWith("gambar ")
+      ) {
+        const keyword = text.split(" ").slice(1).join(" ");
+        const products = await searchProduct(keyword);
+
+        if (products.length === 0) {
+          response = `❌ Produk "${keyword}" tidak ditemukan.\n\nKetik "menu" untuk lihat semua produk.`;
+        } else {
+          // Kirim gambar produk (tidak perlu set response karena sudah kirim langsung)
+          console.log(`📸 Mengirim foto produk: ${products[0].name}`);
+          await sendProductImage(socket, remoteJid, products[0]);
+          // Tidak set response karena sudah dikirim via sendProductImage
+          // Track message akan di-handle terpisah
+          return;
+        }
+      }
+      // Katalog dengan gambar
+      else if (
+        lowerText === "katalog gambar" ||
+        lowerText === "katalog foto" ||
+        lowerText === "menu gambar" ||
+        lowerText === "menu foto"
+      ) {
+        console.log(`📸 Mengirim katalog dengan gambar...`);
+        const products = await getProducts();
+        await sendCatalogWithImages(socket, remoteJid, products);
+        // Tidak set response karena sudah dikirim via sendCatalogWithImages
+        return;
+      }
       // Cek harga spesifik
       else if (
         lowerText.startsWith("harga ") ||
@@ -427,6 +761,52 @@ async function handleMessage(socket: WASocket, message: proto.IWebMessageInfo) {
           const stockStatus =
             p.stock > 0 ? `✅ TERSEDIA: ${p.stock} ${p.unit}` : "❌ STOK HABIS";
           response = `📦 *STOK ${p.name.toUpperCase()}*\n\n${stockStatus}\n💰 Harga: ${formatPrice(p.price)}/${p.unit}`;
+        }
+      }
+      // Cek pesanan customer
+      else if (
+        lowerText === "cek pesanan" ||
+        lowerText === "cek order" ||
+        lowerText === "pesanan saya" ||
+        lowerText === "order saya" ||
+        lowerText === "riwayat pesanan" ||
+        lowerText === "history order"
+      ) {
+        const orders = await getCustomerOrders(senderPhone);
+        response = formatOrderList(orders);
+      }
+      // Status detail pesanan: status [order_id]
+      else if (lowerText.startsWith("status ")) {
+        const orderIdStr = text.split(" ").slice(1).join("").replace("#", "");
+        const orderId = parseInt(orderIdStr);
+
+        if (isNaN(orderId)) {
+          response =
+            '❌ Format salah!\n\nGunakan: status [nomor pesanan]\nContoh: status 1234\n\n_Ketik "cek pesanan" untuk lihat daftar pesanan Anda_';
+        } else {
+          const order = await getOrderDetail(orderId);
+
+          if (!order) {
+            response = `❌ Pesanan #${orderId} tidak ditemukan.\n\n_Ketik "cek pesanan" untuk lihat daftar pesanan Anda_`;
+          } else {
+            // Verifikasi bahwa order milik customer ini (optional security check)
+            const orderPhone = (
+              order.customer?.phone ||
+              order.customer_phone ||
+              ""
+            ).replace(/[^0-9]/g, "");
+            const userPhone = senderPhone.replace(/[^0-9]/g, "");
+
+            if (
+              !isAdminUser &&
+              !orderPhone.includes(userPhone) &&
+              !userPhone.includes(orderPhone)
+            ) {
+              response = `❌ Pesanan #${orderId} bukan milik Anda.\n\n_Ketik "cek pesanan" untuk lihat daftar pesanan Anda_`;
+            } else {
+              response = formatOrderDetail(order);
+            }
+          }
         }
       }
       // Order / Pesan
@@ -512,11 +892,15 @@ async function handleMessage(socket: WASocket, message: proto.IWebMessageInfo) {
         response =
           `❓ *PANDUAN PENGGUNAAN*\n\n` +
           `📋 *menu* - Lihat daftar produk\n` +
+          `📸 *foto [produk]* - Lihat foto produk\n` +
+          `🖼️ *katalog gambar* - Lihat katalog dengan gambar\n` +
           `💰 *harga [produk]* - Cek harga\n` +
           `📦 *stok [produk]* - Cek ketersediaan\n` +
           `🛒 *pesan [produk] [jumlah]* - Buat pesanan\n` +
+          `📝 *cek pesanan* - Lihat daftar pesanan Anda\n` +
+          `🔍 *status [nomor]* - Detail pesanan\n` +
           `👤 *admin* - Hubungi CS\n\n` +
-          `_Contoh: "pesan telur 5 kg"_`;
+          `_Contoh: "foto telur" atau "pesan telur 5 kg"_`;
       }
       // Greeting
       else if (
@@ -680,6 +1064,124 @@ async function startBot(clearFirst: boolean = false): Promise<void> {
   }
 }
 
+// ==================== HTTP API SERVER ====================
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+// Health check
+app.get("/health", (_req: Request, res: Response) => {
+  res.json({
+    status: "ok",
+    connected: currentSocket !== null,
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// Send single message
+app.post("/send-message", async (req: Request, res: Response) => {
+  try {
+    const { jid, message, imageUrl } = req.body;
+
+    if (!currentSocket) {
+      res.status(503).json({ success: false, error: "Bot not connected" });
+      return;
+    }
+
+    if (!jid || !message) {
+      res
+        .status(400)
+        .json({ success: false, error: "jid and message required" });
+      return;
+    }
+
+    if (imageUrl) {
+      await currentSocket.sendMessage(jid, {
+        image: { url: imageUrl },
+        caption: message,
+      });
+    } else {
+      await currentSocket.sendMessage(jid, { text: message });
+    }
+
+    res.json({ success: true, message: "Message sent" });
+  } catch (error) {
+    console.error("Send message error:", error);
+    res.status(500).json({ success: false, error: String(error) });
+  }
+});
+
+// Broadcast to multiple recipients
+app.post("/broadcast", async (req: Request, res: Response) => {
+  try {
+    const { recipients, message, imageUrl } = req.body;
+
+    if (!currentSocket) {
+      res.status(503).json({ success: false, error: "Bot not connected" });
+      return;
+    }
+
+    if (!recipients || !Array.isArray(recipients) || !message) {
+      res.status(400).json({
+        success: false,
+        error: "recipients (array) and message required",
+      });
+      return;
+    }
+
+    const results: { phone: string; success: boolean; error?: string }[] = [];
+
+    for (const phone of recipients) {
+      try {
+        const jid = formatPhoneToJid(phone);
+        if (imageUrl) {
+          await currentSocket.sendMessage(jid, {
+            image: { url: imageUrl },
+            caption: message,
+          });
+        } else {
+          await currentSocket.sendMessage(jid, { text: message });
+        }
+        results.push({ phone, success: true });
+        await sleep(500);
+      } catch (err) {
+        results.push({ phone, success: false, error: String(err) });
+      }
+    }
+
+    const sent = results.filter((r) => r.success).length;
+    const failed = results.filter((r) => !r.success).length;
+
+    res.json({
+      success: true,
+      total: recipients.length,
+      sent,
+      failed,
+      results,
+    });
+  } catch (error) {
+    console.error("Broadcast error:", error);
+    res.status(500).json({ success: false, error: String(error) });
+  }
+});
+
+function formatPhoneToJid(phone: string): string {
+  let cleaned = phone.replace(/[^0-9]/g, "");
+  if (cleaned.startsWith("0")) {
+    cleaned = "62" + cleaned.substring(1);
+  }
+  if (!cleaned.includes("@")) {
+    cleaned += "@s.whatsapp.net";
+  }
+  return cleaned;
+}
+
+function startHttpServer(): void {
+  app.listen(HTTP_PORT, () => {
+    console.log(`🌐 HTTP API listening on port ${HTTP_PORT}`);
+  });
+}
+
 // ==================== MAIN ====================
 async function main() {
   console.log("\n" + "═".repeat(50));
@@ -698,6 +1200,9 @@ async function main() {
     console.log("   Jalankan quick-qr.ts atau quick-pair.ts dulu.\n");
     process.exit(1);
   }
+
+  // Start HTTP API server
+  startHttpServer();
 
   await startBot(false);
 }

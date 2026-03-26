@@ -353,4 +353,176 @@ class BaileysService
 
         return $clean.'@s.whatsapp.net';
     }
+
+    /**
+     * Broadcast pesan ke multiple nomor telepon
+     *
+     * @param  array  $phones  Array nomor telepon
+     * @param  string  $message  Pesan yang akan dikirim
+     * @param  int  $delayMs  Delay antar pesan dalam milliseconds
+     * @return array Hasil broadcast dengan success, sent, failed, dan detail results
+     */
+    public function sendBroadcast(array $phones, string $message, int $delayMs = 2000): array
+    {
+        try {
+            if (empty($phones)) {
+                return [
+                    'success' => false,
+                    'message' => 'Tidak ada nomor telepon yang diberikan',
+                    'total' => 0,
+                    'sent' => 0,
+                    'failed' => 0,
+                ];
+            }
+
+            $response = $this->makeRequest('POST', '/broadcast', [
+                'phones' => $phones,
+                'message' => $message,
+                'delay_ms' => $delayMs,
+            ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+
+                Log::info('Broadcast selesai', [
+                    'total' => $data['total'] ?? count($phones),
+                    'sent' => $data['sent'] ?? 0,
+                    'failed' => $data['failed'] ?? 0,
+                ]);
+
+                return [
+                    'success' => $data['success'] ?? false,
+                    'total' => $data['total'] ?? count($phones),
+                    'sent' => $data['sent'] ?? 0,
+                    'failed' => $data['failed'] ?? 0,
+                    'results' => $data['results'] ?? [],
+                    'duration_ms' => $data['duration_ms'] ?? null,
+                ];
+            }
+
+            Log::warning('Broadcast gagal', [
+                'status' => $response->status(),
+                'response' => $response->body(),
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Gagal mengirim broadcast',
+                'total' => count($phones),
+                'sent' => 0,
+                'failed' => count($phones),
+            ];
+        } catch (\Exception $e) {
+            Log::error('Error broadcast', [
+                'error' => $e->getMessage(),
+                'phones_count' => count($phones),
+            ]);
+
+            return [
+                'success' => false,
+                'message' => $e->getMessage(),
+                'total' => count($phones),
+                'sent' => 0,
+                'failed' => count($phones),
+            ];
+        }
+    }
+
+    /**
+     * Cek status broadcast endpoint
+     */
+    public function getBroadcastStatus(): array
+    {
+        try {
+            $response = $this->makeRequest('GET', '/broadcast/status', [], 5);
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            return [
+                'ready' => false,
+                'error' => 'Failed to get broadcast status',
+            ];
+        } catch (\Exception $e) {
+            return [
+                'ready' => false,
+                'error' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Get connection status dari Baileys service
+     */
+    public function getConnectionStatus(): array
+    {
+        try {
+            $response = $this->makeRequest('GET', '/health/connection', [], 5);
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            return [
+                'authenticated' => false,
+                'status' => 'unknown',
+                'error' => 'Failed to get connection status',
+            ];
+        } catch (\Exception $e) {
+            return [
+                'authenticated' => false,
+                'status' => 'error',
+                'error' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Get health metrics dari Baileys service
+     */
+    public function getHealthMetrics(): array
+    {
+        try {
+            $response = $this->makeRequest('GET', '/health/metrics', [], 5);
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            return [
+                'health_score' => 0,
+                'error' => 'Failed to get health metrics',
+            ];
+        } catch (\Exception $e) {
+            return [
+                'health_score' => 0,
+                'error' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Restart Baileys service
+     */
+    public function restart(): array
+    {
+        try {
+            $response = $this->makeRequest('POST', '/health/restart', [], 30);
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            return [
+                'success' => false,
+                'error' => 'Failed to restart service',
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage(),
+            ];
+        }
+    }
 }

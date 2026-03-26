@@ -3,6 +3,12 @@
 use App\Models\Chat;
 use App\Models\Message;
 use App\Models\User;
+use Illuminate\Support\Carbon;
+
+// Clear Chat table before each test in scopes describe block
+beforeEach(function () {
+    Chat::query()->delete();
+});
 
 describe('Chat Model', function () {
 
@@ -22,7 +28,7 @@ describe('Chat Model', function () {
 
     describe('fillable attributes', function () {
         it('has correct fillable fields', function () {
-            $chat = new Chat();
+            $chat = new Chat;
             $fillable = $chat->getFillable();
 
             expect($fillable)->toContain('customer_phone')
@@ -36,7 +42,7 @@ describe('Chat Model', function () {
     describe('casts', function () {
         it('casts last_message_at to datetime', function () {
             $chat = Chat::factory()->make(['last_message_at' => now()]);
-            expect($chat->last_message_at)->toBeInstanceOf(\Illuminate\Support\Carbon::class);
+            expect($chat->last_message_at)->toBeInstanceOf(Carbon::class);
         });
     });
 

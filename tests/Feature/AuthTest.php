@@ -5,6 +5,10 @@ use Illuminate\Support\Facades\Hash;
 
 use function Pest\Laravel\getJson;
 
+beforeEach(function () {
+    User::query()->delete();
+});
+
 describe('Authentication', function () {
 
     describe('Health Check Endpoint', function () {

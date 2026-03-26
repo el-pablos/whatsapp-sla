@@ -95,3 +95,7 @@ storage/app/whatsapp-sessions/
 # OS
 .DS_Store
 Thumbs.db
+
+# Claude Code Memory (project-specific, don't commit)
+CLAUDE.md
+**/CLAUDE.md

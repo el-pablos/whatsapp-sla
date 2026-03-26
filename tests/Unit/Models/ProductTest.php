@@ -2,6 +2,10 @@
 
 use App\Models\Product;
 
+beforeEach(function () {
+    Product::query()->delete();
+});
+
 describe('Product Model', function () {
 
     describe('constants', function () {

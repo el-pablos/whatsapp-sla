@@ -2,6 +2,10 @@
 
 use App\Models\Order;
 
+beforeEach(function () {
+    Order::query()->delete();
+});
+
 describe('Order Model', function () {
 
     describe('constants', function () {

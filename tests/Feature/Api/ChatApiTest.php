@@ -6,6 +6,8 @@ use App\Models\User;
 // fix: tambahkan api token authentication untuk tests - 2026-03-24
 beforeEach(function () {
     config(['services.bot.api_token' => 'test-api-token']);
+    Chat::query()->delete();
+    User::query()->delete();
 });
 
 describe('Chat API', function () {

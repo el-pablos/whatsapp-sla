@@ -3,6 +3,10 @@
 use App\Models\Chat;
 use App\Models\Message;
 
+beforeEach(function () {
+    Message::query()->delete();
+});
+
 describe('Message Model', function () {
 
     describe('constants', function () {

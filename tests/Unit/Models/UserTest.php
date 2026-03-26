@@ -2,6 +2,11 @@
 
 use App\Models\User;
 
+// Clear User table before each test to ensure isolation
+beforeEach(function () {
+    User::query()->delete();
+});
+
 describe('User Model', function () {
 
     describe('constants', function () {
@@ -16,7 +21,7 @@ describe('User Model', function () {
 
     describe('fillable attributes', function () {
         it('has correct fillable fields', function () {
-            $user = new User();
+            $user = new User;
             $fillable = $user->getFillable();
 
             expect($fillable)->toContain('name')
@@ -30,7 +35,7 @@ describe('User Model', function () {
 
     describe('hidden attributes', function () {
         it('hides password and remember_token', function () {
-            $user = new User();
+            $user = new User;
             $hidden = $user->getHidden();
 
             expect($hidden)->toContain('password')

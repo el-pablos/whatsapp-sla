@@ -9,7 +9,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 
@@ -54,6 +53,7 @@ class WebhookController extends Controller
         // Validate payload structure
         if (! isset($payload['entry'][0]['changes'][0]['value'])) {
             Log::debug('Webhook ignored: invalid payload structure');
+
             return response()->json(['status' => 'ignored'], 200);
         }
 
@@ -62,6 +62,7 @@ class WebhookController extends Controller
         // Skip status updates (only process messages)
         if (! isset($value['messages'])) {
             Log::debug('Webhook skipped: no messages in payload (status update)');
+
             return response()->json(['status' => 'no_messages'], 200);
         }
 
@@ -163,6 +164,7 @@ class WebhookController extends Controller
                 'from' => $from,
                 'message_id' => $messageId,
             ]);
+
             return;
         }
 
@@ -498,7 +500,7 @@ class WebhookController extends Controller
     {
         $message = "Halo! Selamat datang di *Ayam Petelur Farm* 🐔\n\n";
         $message .= "Kami menyediakan telur segar dan ayam berkualitas langsung dari peternakan.\n\n";
-        $message .= "Silakan pilih menu di bawah ini:";
+        $message .= 'Silakan pilih menu di bawah ini:';
 
         $this->sendWhatsAppButtons($phone, $message, [
             ['id' => 'btn_harga', 'title' => '💰 Lihat Harga'],
@@ -515,7 +517,7 @@ class WebhookController extends Controller
         $message = "*MENU UTAMA*\n";
         $message .= "Ayam Petelur Farm 🐔\n";
         $message .= "====================\n\n";
-        $message .= "Pilih salah satu menu:";
+        $message .= 'Pilih salah satu menu:';
 
         $this->sendWhatsAppButtons($phone, $message, [
             ['id' => 'btn_harga', 'title' => '💰 Lihat Harga'],
@@ -611,7 +613,7 @@ class WebhookController extends Controller
         $message .= "   _Produk: [nama produk]_\n";
         $message .= "   _Jumlah: [qty] kg_\n";
         $message .= "   _Alamat: [alamat lengkap]_\n\n";
-        $message .= "Admin kami akan segera memproses pesanan Anda! 🚀";
+        $message .= 'Admin kami akan segera memproses pesanan Anda! 🚀';
 
         $this->sendWhatsAppButtons($phone, $message, [
             ['id' => 'btn_admin', 'title' => 'Hubungi Admin'],
@@ -635,7 +637,7 @@ class WebhookController extends Controller
         $message .= "🐔 Ayam Potong Segar (1.2-1.5 kg)\n";
         $message .= "🐔 Ayam Kampung (0.8-1.2 kg)\n\n";
         $message .= "_Semua produk HALAL & tersertifikasi_\n";
-        $message .= "_Langsung dari peternakan kami!_";
+        $message .= '_Langsung dari peternakan kami!_';
 
         $this->sendWhatsAppButtons($phone, $message, [
             ['id' => 'btn_harga', 'title' => 'Lihat Harga'],
@@ -668,7 +670,7 @@ class WebhookController extends Controller
         $message .= "Minggu: Libur\n\n";
         $message .= "📱 *WhatsApp Admin:*\n";
         $message .= "0858-1737-8442\n\n";
-        $message .= "_Silakan tunggu balasan dari admin._";
+        $message .= '_Silakan tunggu balasan dari admin._';
 
         $this->sendWhatsAppButtons($phone, $message, [
             ['id' => 'btn_katalog', 'title' => 'Lihat Katalog'],
@@ -678,151 +680,91 @@ class WebhookController extends Controller
     }
 
     /**
-     * Send WhatsApp interactive buttons
+     * Send WhatsApp interactive buttons via queue job
      */
-    protected function sendWhatsAppButtons(string $phone, string $body, array $buttons): array
+    protected function sendWhatsAppButtons(string $phone, string $body, array $buttons): void
     {
-        $apiUrl = config('services.whatsapp.api_url');
-        $phoneNumberId = config('services.whatsapp.phone_number_id');
-        $accessToken = config('services.whatsapp.access_token');
-
-        $url = "{$apiUrl}/{$phoneNumberId}/messages";
-
-        $buttonList = [];
-        foreach (array_slice($buttons, 0, 3) as $btn) {
-            $buttonList[] = [
-                'type' => 'reply',
-                'reply' => [
-                    'id' => $btn['id'],
-                    'title' => substr($btn['title'], 0, 20),
-                ],
-            ];
-        }
-
-        $payload = [
-            'messaging_product' => 'whatsapp',
-            'to' => $phone,
-            'type' => 'interactive',
-            'interactive' => [
-                'type' => 'button',
-                'body' => ['text' => $body],
-                'action' => ['buttons' => $buttonList],
-            ],
-        ];
-
-        Log::info('Sending WhatsApp buttons', [
+        Log::info('Queueing WhatsApp buttons message', [
             'phone' => $phone,
-            'url' => $url,
-            'buttons' => array_column($buttons, 'id'),
+            'buttons_count' => count($buttons),
+            'button_ids' => array_column($buttons, 'id'),
         ]);
 
         try {
-            $response = Http::withToken($accessToken)->post($url, $payload);
+            // Dispatch job untuk send buttons dengan auth awareness
+            SendWhatsAppMessage::buttons($phone, $body, $buttons, [
+                'source' => 'auto_reply',
+                'queued_at' => now()->toISOString(),
+            ])->dispatch();
 
-            $result = $response->json();
-            $status = $response->status();
-
-            Log::info('WhatsApp API response', [
+            Log::info('WhatsApp buttons message queued successfully', [
                 'phone' => $phone,
-                'status' => $status,
-                'success' => $response->successful(),
-                'response' => $result,
+                'buttons_count' => count($buttons),
             ]);
-
-            if (! $response->successful()) {
-                Log::error('WhatsApp API error', [
-                    'phone' => $phone,
-                    'status' => $status,
-                    'error' => $result['error'] ?? 'Unknown error',
-                ]);
-            }
-
-            return $result;
         } catch (\Exception $e) {
-            Log::error('Failed to send WhatsApp buttons', [
+            Log::error('Failed to queue WhatsApp buttons message', [
                 'phone' => $phone,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-
-            return ['error' => $e->getMessage()];
         }
     }
 
     /**
-     * Send WhatsApp interactive list
+     * Send WhatsApp interactive list via queue job
      */
-    protected function sendWhatsAppList(string $phone, string $body, string $buttonText, array $sections): array
+    protected function sendWhatsAppList(string $phone, string $body, string $buttonText, array $sections): void
     {
-        $apiUrl = config('services.whatsapp.api_url');
-        $phoneNumberId = config('services.whatsapp.phone_number_id');
-        $accessToken = config('services.whatsapp.access_token');
-
-        $url = "{$apiUrl}/{$phoneNumberId}/messages";
+        Log::info('Queueing WhatsApp list message', [
+            'phone' => $phone,
+            'sections_count' => count($sections),
+            'button_text' => $buttonText,
+        ]);
 
         try {
-            $response = Http::withToken($accessToken)
-                ->post($url, [
-                    'messaging_product' => 'whatsapp',
-                    'to' => $phone,
-                    'type' => 'interactive',
-                    'interactive' => [
-                        'type' => 'list',
-                        'body' => ['text' => $body],
-                        'action' => [
-                            'button' => $buttonText,
-                            'sections' => $sections,
-                        ],
-                    ],
-                ]);
+            // Dispatch job untuk send list dengan auth awareness
+            SendWhatsAppMessage::list($phone, $body, $buttonText, $sections, [
+                'source' => 'auto_reply',
+                'queued_at' => now()->toISOString(),
+            ])->dispatch();
 
-            $result = $response->json();
-            Log::info('WhatsApp list sent', ['phone' => $phone, 'status' => $response->status()]);
-
-            return $result;
-        } catch (\Exception $e) {
-            Log::error('Failed to send WhatsApp list', ['error' => $e->getMessage()]);
-
-            return ['error' => $e->getMessage()];
-        }
-    }
-
-    /**
-     * Send WhatsApp text message
-     */
-    protected function sendWhatsAppMessage(string $phone, string $message): array
-    {
-        $apiUrl = config('services.whatsapp.api_url');
-        $phoneNumberId = config('services.whatsapp.phone_number_id');
-        $accessToken = config('services.whatsapp.access_token');
-
-        $url = "{$apiUrl}/{$phoneNumberId}/messages";
-
-        try {
-            $response = Http::withToken($accessToken)
-                ->post($url, [
-                    'messaging_product' => 'whatsapp',
-                    'to' => $phone,
-                    'type' => 'text',
-                    'text' => ['body' => $message],
-                ]);
-
-            $result = $response->json();
-
-            Log::info('WhatsApp message sent', [
+            Log::info('WhatsApp list message queued successfully', [
                 'phone' => $phone,
-                'status' => $response->status(),
-                'response' => $result,
+                'sections_count' => count($sections),
             ]);
-
-            return $result;
         } catch (\Exception $e) {
-            Log::error('Failed to send WhatsApp message', [
+            Log::error('Failed to queue WhatsApp list message', [
                 'phone' => $phone,
                 'error' => $e->getMessage(),
             ]);
+        }
+    }
 
-            return ['error' => $e->getMessage()];
+    /**
+     * Send WhatsApp text message via queue job
+     */
+    protected function sendWhatsAppMessage(string $phone, string $message): void
+    {
+        Log::info('Queueing WhatsApp text message', [
+            'phone' => $phone,
+            'message_length' => strlen($message),
+        ]);
+
+        try {
+            // Dispatch job untuk send text dengan auth awareness
+            SendWhatsAppMessage::text($phone, $message, [
+                'source' => 'auto_reply',
+                'queued_at' => now()->toISOString(),
+            ])->dispatch();
+
+            Log::info('WhatsApp text message queued successfully', [
+                'phone' => $phone,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to queue WhatsApp text message', [
+                'phone' => $phone,
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 }

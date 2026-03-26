@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use App\Http\Requests\MessageRequest;
 use App\Http\Resources\ChatResource;
 use App\Http\Resources\MessageResource;
+use App\Jobs\SendWhatsAppMessage;
 use App\Models\Chat;
 use App\Models\Message;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
@@ -32,9 +34,9 @@ class ChatController extends Controller
         // Search by customer name/phone
         if ($request->has('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('customer_name', 'LIKE', "%{$search}%")
-                  ->orWhere('customer_phone', 'LIKE', "%{$search}%");
+                    ->orWhere('customer_phone', 'LIKE', "%{$search}%");
             });
         }
 
@@ -61,7 +63,7 @@ class ChatController extends Controller
     public function show(int $id, Request $request): InertiaResponse|ChatResource
     {
         $chat = Chat::with([
-            'messages' => fn($q) => $q->orderBy('created_at'),
+            'messages' => fn ($q) => $q->orderBy('created_at'),
             'handler',
         ])->findOrFail($id);
 
@@ -198,25 +200,39 @@ class ChatController extends Controller
     }
 
     /**
-     * Dispatch message ke WhatsApp via bot service
+     * Dispatch message ke WhatsApp via queue job dengan auth awareness
      */
     private function dispatchToWhatsApp(Chat $chat, Message $message): void
     {
         try {
-            Redis::publish('whatsapp.outgoing', json_encode([
+            // Parse content untuk mendapatkan text message
+            $content = json_decode($message->content, true);
+            $text = $content['body'] ?? $content['text'] ?? 'Message from admin';
+
+            // Dispatch job dengan auth awareness
+            SendWhatsAppMessage::text(
+                $chat->customer_phone,
+                $text,
+                [
+                    'source' => 'admin_chat',
+                    'chat_id' => $chat->id,
+                    'message_id' => $message->id,
+                    'admin_id' => $message->direction === Message::DIRECTION_OUT ? auth()->id() : null,
+                    'queued_at' => now()->toISOString(),
+                ]
+            )->dispatch();
+
+            Log::info('Admin message queued for WhatsApp delivery', [
                 'chat_id' => $chat->id,
-                'phone' => $chat->customer->phone,
-                'message' => $message->content,
-                'message_type' => $message->message_type,
-                'attachments' => $message->attachments->map(fn($a) => [
-                    'path' => $a->file_path,
-                    'type' => $a->file_type,
-                ])->toArray(),
-            ]));
+                'message_id' => $message->id,
+                'customer_phone' => $chat->customer_phone,
+            ]);
         } catch (\Exception $e) {
-            logger()->error('WhatsApp dispatch failed', [
+            Log::error('Failed to queue admin message for WhatsApp', [
                 'chat_id' => $chat->id,
+                'message_id' => $message->id,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
         }
     }
